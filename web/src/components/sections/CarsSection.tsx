@@ -38,7 +38,7 @@ export function CarsSection() {
           <CardHeader>
             <CardTitle>还没有车型</CardTitle>
             <CardDescription>
-              建议先添加 1～3 个备选车，填指导价/优惠/首年保险/能耗等；也可先点工具栏「加载示例」再改。然后到「假设」打开需要的方案组合，最后看「结果」。
+              建议先添加 1～3 个备选车，填指导价/优惠/首年保险/能耗等；也可先点工具栏「加载示例」再改。补全「全局」「假设」后，在「结果」里对比并在卡片中切换上牌/是否保留宝来。
             </CardDescription>
           </CardHeader>
         </Card>

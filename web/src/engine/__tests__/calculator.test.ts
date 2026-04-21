@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { defaultAppState, newCarDraft } from '@/state/defaults'
-import { buildPlanVariants } from '@/engine/scenarios'
+import { buildPlanVariants, FULL_PLAN_GENERATION } from '@/engine/scenarios'
 import { computeBaoLaiCost, computeNewCarCost, landingPrice } from '@/engine/calculator'
 
 describe('calculator engine', () => {
@@ -41,7 +41,7 @@ describe('calculator engine', () => {
       residualRate5yPct: 55,
     })
 
-    const v = buildPlanVariants(car, state.planGen)[0]
+    const v = buildPlanVariants(car, FULL_PLAN_GENERATION)[0]
     const r = computeNewCarCost({ car, globals: state.globals, assumptions: state.assumptions, plan: v, years: 5 })
     expect(Math.round(r.totalTrace.value)).toBe(Math.round(r.total))
   })

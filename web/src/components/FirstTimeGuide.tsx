@@ -39,10 +39,10 @@ export function FirstTimeGuide() {
                 <span className="text-foreground">全局</span>：里程、油价/电价与充电占比、贷款、牌照相关费用——影响所有方案。
               </li>
               <li>
-                <span className="text-foreground">假设</span>：宝来每年油费/保险/维保等基线；下方开关决定生成哪些「保留/淘汰宝来 × 上牌方式」组合。
+                <span className="text-foreground">假设</span>：宝来每年油费/保险/维保、机会成本、月供红线等基线。
               </li>
               <li>
-                <span className="text-foreground">结果</span>：看排序与差额；需要时点开「追溯」核对公式与数字来源。
+                <span className="text-foreground">结果</span>：按<strong>车型</strong>对比，每车默认展示该车成本最低的组合；可在卡片内切换「保留/淘汰宝来、上牌策略」后再看数字，或用「恢复最优」回到该车最低成本组合。
               </li>
             </ol>
             <p className="text-xs text-muted-foreground">
@@ -78,6 +78,7 @@ export function FirstTimeGuide() {
             <div className="font-medium text-foreground">其他提示</div>
             <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
               <li>「追溯」里点击路径标签可跳到对应输入框并短暂高亮。</li>
+              <li>「新车方案排行榜」：<strong>卡片</strong>模式按车型一块卡片并可切换同车方案；<strong>表格</strong>模式平铺列出全部变体。</li>
               <li>「敏感性分析」需先在排行榜里「设为分析对象」，再看关键参数加减百分之几对总成本的影响。</li>
               <li>输出是辅助决策的简化模型，非财务或法律意见；参数可按你家实际情况改。</li>
             </ul>

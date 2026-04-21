@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-import type { AppStateV1, CarDraft, GlobalParams, Assumptions, PlanGenerationOptions } from '@/domain/types'
+import type { AppStateV1, CarDraft, GlobalParams, Assumptions } from '@/domain/types'
 import { defaultAppState, newCarDraft } from '@/state/defaults'
 
 type AppStore = AppStateV1 & {
@@ -17,7 +17,6 @@ type AppStore = AppStateV1 & {
 
   setGlobals: (patch: Partial<GlobalParams>) => void
   setAssumptions: (patch: Partial<Assumptions>) => void
-  setPlanGen: (patch: Partial<PlanGenerationOptions>) => void
 
   resetAll: () => void
   loadDemo: () => void
@@ -33,7 +32,6 @@ function isObject(v: unknown): v is Record<string, unknown> {
 function migrateToV1(raw: unknown): AppStateV1 {
   if (!isObject(raw)) return structuredClone(defaultAppState)
 
-  // Very small migration layer: unknown -> V1 by merging defaults
   const merged: AppStateV1 = {
     schemaVersion: 1,
     cars: Array.isArray(raw.cars) ? (raw.cars as CarDraft[]) : defaultAppState.cars,
@@ -42,13 +40,8 @@ function migrateToV1(raw: unknown): AppStateV1 {
       ...defaultAppState.assumptions,
       ...(isObject(raw.assumptions) ? (raw.assumptions as Assumptions) : {}),
     },
-    planGen: {
-      ...defaultAppState.planGen,
-      ...(isObject(raw.planGen) ? (raw.planGen as PlanGenerationOptions) : {}),
-    },
   }
 
-  // Ensure each car has required fields
   merged.cars = merged.cars.map((c) => newCarDraft({ ...c, id: typeof c.id === 'string' ? c.id : crypto.randomUUID() }))
 
   return merged
@@ -71,7 +64,6 @@ export const useAppStore = create<AppStore>()(
 
       setGlobals: (patch) => set((s) => ({ globals: { ...s.globals, ...patch } })),
       setAssumptions: (patch) => set((s) => ({ assumptions: { ...s.assumptions, ...patch } })),
-      setPlanGen: (patch) => set((s) => ({ planGen: { ...s.planGen, ...patch } })),
 
       resetAll: () =>
         set({
@@ -116,7 +108,6 @@ export const useAppStore = create<AppStore>()(
           cars: s.cars,
           globals: s.globals,
           assumptions: s.assumptions,
-          planGen: s.planGen,
           exportedAt: new Date().toISOString(),
         }
         return new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' })
@@ -135,7 +126,6 @@ export const useAppStore = create<AppStore>()(
         cars: s.cars,
         globals: s.globals,
         assumptions: s.assumptions,
-        planGen: s.planGen,
       }),
     },
   ),

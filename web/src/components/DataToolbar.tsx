@@ -2,7 +2,7 @@ import { useRef } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { computeBaoLaiCost, computeNewCarCost } from '@/engine/calculator'
-import { buildPlanVariants } from '@/engine/scenarios'
+import { buildPlanVariants, FULL_PLAN_GENERATION } from '@/engine/scenarios'
 import { useAppStore } from '@/state/store'
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -25,7 +25,6 @@ export function DataToolbar() {
   const cars = useAppStore((s) => s.cars)
   const globals = useAppStore((s) => s.globals)
   const assumptions = useAppStore((s) => s.assumptions)
-  const planGen = useAppStore((s) => s.planGen)
 
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -66,7 +65,7 @@ export function DataToolbar() {
           lines.push('')
           lines.push('方案,子标题,5年总成本,Δvs宝来(5年),月供')
           for (const car of cars) {
-            for (const v of buildPlanVariants(car, planGen)) {
+            for (const v of buildPlanVariants(car, FULL_PLAN_GENERATION)) {
               const r5 = computeNewCarCost({ car, globals, assumptions, plan: v, years: 5 })
               const delta = r5.total - baseline5
               lines.push(

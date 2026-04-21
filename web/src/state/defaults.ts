@@ -64,11 +64,4 @@ export const defaultAppState: AppStateV1 = {
 
     monthlyPaymentLimitCny: 3000,
   },
-  planGen: {
-    includeKeepBaoLai: true,
-    includeDropBaoLai: true,
-    includeTransfer: true,
-    includeAuction: true,
-    includeGreen: true,
-  },
 }

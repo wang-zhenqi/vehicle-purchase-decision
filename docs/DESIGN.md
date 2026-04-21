@@ -41,7 +41,7 @@ flowchart TD
 - `cars: CarDraft[]`
 - `globals: GlobalParams`
 - `assumptions: Assumptions`
-- `planGen: PlanGenerationOptions`
+- 方案枚举：引擎内 `FULL_PLAN_GENERATION`（全量合法组合；用户在结果卡片中切换）
 
 ### `TraceNode`
 

@@ -83,5 +83,4 @@ export type AppStateV1 = {
   cars: CarDraft[]
   globals: GlobalParams
   assumptions: Assumptions
-  planGen: PlanGenerationOptions
 }

@@ -1,5 +1,14 @@
 import type { CarDraft, PlanGenerationOptions, PlanVariant } from '@/domain/types'
 
+/** 应用内固定枚举：生成所有符合家庭策略的组合；具体看哪条在「结果」卡片里选。 */
+export const FULL_PLAN_GENERATION: PlanGenerationOptions = {
+  includeKeepBaoLai: true,
+  includeDropBaoLai: true,
+  includeTransfer: true,
+  includeAuction: true,
+  includeGreen: true,
+}
+
 /**
  * 方案枚举（家庭约束：不放弃现有蓝牌指标）
  *

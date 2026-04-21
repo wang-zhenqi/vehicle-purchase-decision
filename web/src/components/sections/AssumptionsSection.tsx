@@ -4,43 +4,16 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { useAppStore } from '@/state/store'
 
-function ToggleRow({
-  label,
-  checked,
-  onChange,
-  hint,
-}: {
-  label: string
-  checked: boolean
-  onChange: (v: boolean) => void
-  hint?: string
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-md border p-3">
-      <div className="min-w-0">
-        <div className="text-sm font-medium">{label}</div>
-        {hint ? <div className="mt-1 text-xs text-muted-foreground">{hint}</div> : null}
-      </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" className="h-4 w-4" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-        <span className="text-muted-foreground">{checked ? '开' : '关'}</span>
-      </label>
-    </div>
-  )
-}
-
 export function AssumptionsSection() {
   const a = useAppStore((s) => s.assumptions)
   const setA = useAppStore((s) => s.setAssumptions)
-  const pg = useAppStore((s) => s.planGen)
-  const setPg = useAppStore((s) => s.setPlanGen)
 
   return (
     <div className="space-y-4">
       <div>
         <div className="text-lg font-semibold">关键假设</div>
         <div className="text-sm text-muted-foreground">
-          宝来继续开的年度开销、机会成本等；下方开关决定「结果」里生成哪些上牌与是否保留宝来的组合。详见页面顶部使用说明。
+          宝来继续开的年度开销、机会成本、月供红线等。「结果」里用卡片切换不同保留/上牌组合，无需在此勾选枚举开关。
         </div>
       </div>
 
@@ -108,37 +81,6 @@ export function AssumptionsSection() {
             <Label>月供红线（元/月，用于结果提示）</Label>
             <Input data-field="assumptions.monthlyPaymentLimitCny" inputMode="numeric" value={a.monthlyPaymentLimitCny} onChange={(e) => setA({ monthlyPaymentLimitCny: Number(e.target.value) })} />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>方案枚举开关</CardTitle>
-          <CardDescription>
-            在「不放弃现有蓝牌指标」前提下生成组合：淘汰宝来时仅「指标落到新车」；保留宝来且需第二张蓝牌时才竞价；PHEV 双车才可「新车绿牌」。
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <ToggleRow label="包含：保留宝来" checked={pg.includeKeepBaoLai} onChange={(v) => setPg({ includeKeepBaoLai: v })} />
-          <ToggleRow label="包含：淘汰宝来" checked={pg.includeDropBaoLai} onChange={(v) => setPg({ includeDropBaoLai: v })} />
-          <ToggleRow
-            label="包含：蓝牌指标迁移"
-            checked={pg.includeTransfer}
-            onChange={(v) => setPg({ includeTransfer: v })}
-            hint="淘汰宝来：指标随置换落到新车。保留宝来：指标挂新车、宝来改外地牌（费用模型见全局「号牌迁移」）。不含深圳「蓝换绿」路径。"
-          />
-          <ToggleRow
-            label="包含：蓝牌竞价"
-            checked={pg.includeAuction}
-            onChange={(v) => setPg({ includeAuction: v })}
-            hint="仅保留宝来且新增 HEV 需第二张蓝牌时适用。"
-          />
-          <ToggleRow
-            label="包含：新车直接绿牌"
-            checked={pg.includeGreen}
-            onChange={(v) => setPg({ includeGreen: v })}
-            hint="仅保留宝来且新增 PHEV、双车并行时适用（宝来继续持蓝牌）。"
-          />
         </CardContent>
       </Card>
 

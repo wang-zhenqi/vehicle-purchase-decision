@@ -8,14 +8,16 @@ import { Separator } from '@/components/ui/separator'
 import { TraceTree } from '@/components/trace/TraceTree'
 import { SensitivityPanel } from '@/components/sections/SensitivityPanel'
 import { computeBaoLaiCost, computeNewCarCost } from '@/engine/calculator'
-import { buildPlanVariants } from '@/engine/scenarios'
+import { planVariantKey, rowKeyForCar } from '@/engine/planKey'
+import { buildPlanVariants, FULL_PLAN_GENERATION } from '@/engine/scenarios'
 import type { TraceNode } from '@/engine/trace'
 import { validateState } from '@/engine/validate'
 import { focusFieldByPath, tabFromFieldPath } from '@/lib/fieldNav'
 import { useAppStore } from '@/state/store'
 import type { CarDraft, PlanVariant } from '@/domain/types'
 
-type Row = {
+type VariantRow = {
+  variantKey: string
   key: string
   title: string
   subtitle: string
@@ -32,11 +34,75 @@ type Row = {
   variant: PlanVariant
 }
 
+type CarBlock = {
+  car: CarDraft
+  rows: VariantRow[]
+  optimalKey: string
+  optimalByKeep: Partial<Record<'keep' | 'drop', string>>
+}
+
+function buildCarBlocks(
+  cars: CarDraft[],
+  globals: Parameters<typeof computeNewCarCost>[0]['globals'],
+  assumptions: Parameters<typeof computeNewCarCost>[0]['assumptions'],
+  planGen: Parameters<typeof buildPlanVariants>[1],
+  baseline5Total: number,
+): CarBlock[] {
+  const blocks: CarBlock[] = []
+
+  for (const car of cars) {
+    const variants = buildPlanVariants(car, planGen)
+    const rows: VariantRow[] = variants.map((v) => {
+      const r5 = computeNewCarCost({ car, globals, assumptions, plan: v, years: 5 })
+      const vk = planVariantKey(v)
+      return {
+        variantKey: vk,
+        key: rowKeyForCar(car.id, v),
+        title: `${car.name}｜${v.label}`,
+        subtitle: `${car.energyType}｜${v.keepBaoLai ? '保留宝来' : '淘汰宝来'}`,
+        energy: car.energyType,
+        total5: r5.total,
+        purchase5: r5.purchaseCost,
+        interest5: r5.loanInterest,
+        residual5: r5.residual,
+        delta5: r5.total - baseline5Total,
+        monthly: r5.monthlyPayment,
+        overMonthlyLimit: r5.monthlyPayment > assumptions.monthlyPaymentLimitCny,
+        trace5: r5.totalTrace,
+        car,
+        variant: v,
+      }
+    })
+
+    if (rows.length === 0) continue
+
+    let optimalKey = rows[0].variantKey
+    let optimalCost = rows[0].total5
+    for (const r of rows) {
+      if (r.total5 < optimalCost) {
+        optimalCost = r.total5
+        optimalKey = r.variantKey
+      }
+    }
+
+    const optimalByKeep: Partial<Record<'keep' | 'drop', string>> = {}
+    for (const r of rows) {
+      const bucket: 'keep' | 'drop' = r.variant.keepBaoLai ? 'keep' : 'drop'
+      const prev = optimalByKeep[bucket]
+      const prevCost = prev === undefined ? Infinity : rows.find((x) => x.variantKey === prev)!.total5
+      if (r.total5 < prevCost) optimalByKeep[bucket] = r.variantKey
+    }
+
+    blocks.push({ car, rows, optimalKey, optimalByKeep })
+  }
+
+  return blocks
+}
+
 export function ResultsSection() {
   const cars = useAppStore((s) => s.cars)
   const globals = useAppStore((s) => s.globals)
   const assumptions = useAppStore((s) => s.assumptions)
-  const planGen = useAppStore((s) => s.planGen)
   const setActiveTab = useAppStore((s) => s.setActiveTab)
 
   const [traceOpen, setTraceOpen] = useState(false)
@@ -44,42 +110,84 @@ export function ResultsSection() {
   const [traceNode, setTraceNode] = useState<TraceNode | null>(null)
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  /** 每车当前查看的方案变体（默认未设置时在 effectivePick 中回落到该车最优） */
+  const [variantPickByCar, setVariantPickByCar] = useState<Record<string, string>>({})
 
-  const issues = useMemo(() => validateState({ schemaVersion: 1, cars, globals, assumptions, planGen }), [cars, globals, assumptions, planGen])
+  const issues = useMemo(() => validateState({ schemaVersion: 1, cars, globals, assumptions }), [cars, globals, assumptions])
 
   const baseline5 = useMemo(() => computeBaoLaiCost(assumptions, 5), [assumptions])
   const baseline10 = useMemo(() => computeBaoLaiCost(assumptions, 10), [assumptions])
 
-  const rows = useMemo(() => {
-    const out: Row[] = []
-    for (const car of cars) {
-      const variants = buildPlanVariants(car, planGen)
-      for (const v of variants) {
-        const r5 = computeNewCarCost({ car, globals, assumptions, plan: v, years: 5 })
-        out.push({
-          key: `${car.id}:${v.keepBaoLai ? 'K' : 'D'}:${v.newCarPlateMode}`,
-          title: `${car.name}｜${v.label}`,
-          subtitle: `${car.energyType}｜${v.keepBaoLai ? '保留宝来' : '淘汰宝来'}`,
-          energy: car.energyType,
-          total5: r5.total,
-          purchase5: r5.purchaseCost,
-          interest5: r5.loanInterest,
-          residual5: r5.residual,
-          delta5: r5.total - baseline5.total,
-          monthly: r5.monthlyPayment,
-          overMonthlyLimit: r5.monthlyPayment > assumptions.monthlyPaymentLimitCny,
-          trace5: r5.totalTrace,
-          car,
-          variant: v,
-        })
-      }
-    }
-    out.sort((a, b) => a.total5 - b.total5)
-    return out
-  }, [cars, globals, assumptions, planGen, baseline5.total])
+  const carBlocks = useMemo(
+    () => buildCarBlocks(cars, globals, assumptions, FULL_PLAN_GENERATION, baseline5.total),
+    [cars, globals, assumptions, baseline5.total],
+  )
 
-  const bestKey = rows.length ? rows[0]?.key : null
-  const selectedRow = selectedKey ? rows.find((r) => r.key === selectedKey) ?? null : null
+  const effectivePick = useMemo(() => {
+    const out: Record<string, string> = {}
+    for (const b of carBlocks) {
+      const valid = new Set(b.rows.map((r) => r.variantKey))
+      const chosen = variantPickByCar[b.car.id]
+      out[b.car.id] = chosen && valid.has(chosen) ? chosen : b.optimalKey
+    }
+    return out
+  }, [carBlocks, variantPickByCar])
+
+  const displayRows = useMemo(() => {
+    const list: VariantRow[] = []
+    for (const b of carBlocks) {
+      const vk = effectivePick[b.car.id]
+      const row = b.rows.find((r) => r.variantKey === vk)
+      if (row) list.push(row)
+    }
+    list.sort((a, b) => a.total5 - b.total5)
+    return list
+  }, [carBlocks, effectivePick])
+
+  /** 表格模式：所有「车型 × 方案变体」平铺（与早期行为一致） */
+  const allVariantRows = useMemo(() => {
+    const list: VariantRow[] = []
+    for (const b of carBlocks) list.push(...b.rows)
+    list.sort((a, b) => a.total5 - b.total5)
+    return list
+  }, [carBlocks])
+
+  const rowByKey = useMemo(() => {
+    const m = new Map<string, VariantRow>()
+    for (const b of carBlocks) for (const r of b.rows) m.set(r.key, r)
+    return m
+  }, [carBlocks])
+
+  const bestKeyCards = displayRows.length ? displayRows[0].key : null
+  const bestKeyTable = allVariantRows.length ? allVariantRows[0].key : null
+  const selectedRow = selectedKey ? rowByKey.get(selectedKey) ?? null : null
+
+  function updateVariantPick(carId: string, variantKey: string) {
+    setVariantPickByCar((p) => ({ ...p, [carId]: variantKey }))
+    setSelectedKey((prev) => {
+      if (!prev) return prev
+      const prefix = `${carId}:`
+      if (prev.startsWith(prefix)) return `${carId}:${variantKey}`
+      return prev
+    })
+  }
+
+  function restoreOptimalForCar(block: CarBlock) {
+    updateVariantPick(block.car.id, block.optimalKey)
+  }
+
+  function restoreAllOptimal() {
+    const next: Record<string, string> = {}
+    for (const b of carBlocks) next[b.car.id] = b.optimalKey
+    setVariantPickByCar(next)
+    setSelectedKey((prev) => {
+      if (!prev) return prev
+      const carId = prev.split(':')[0]
+      const block = carBlocks.find((x) => x.car.id === carId)
+      if (!block) return null
+      return `${carId}:${block.optimalKey}`
+    })
+  }
 
   function openTrace(title: string, node: TraceNode) {
     setTraceTitle(title)
@@ -92,7 +200,6 @@ export function ResultsSection() {
     if (tab) {
       setTraceOpen(false)
       setActiveTab(tab)
-      // Wait for tab render, then focus.
       window.setTimeout(() => {
         focusFieldByPath(path)
       }, 50)
@@ -151,51 +258,124 @@ export function ResultsSection() {
         <CardHeader>
           <CardTitle>新车方案排行榜（5年）</CardTitle>
           <CardDescription>
-            移动端默认「卡片」，可切换「表格」。绿色边框为当前排序下总成本最低项。数字含义见页面顶部使用说明。
+            <strong>卡片</strong>：按车型对比，每车默认该车成本最低组合，可在卡片内切换保留/淘汰与上牌策略，并支持恢复最优。
+            <span className="mx-1 text-muted-foreground">｜</span>
+            <strong>表格</strong>：列出所有方案变体（平铺），按 5 年总成本排序；绿色行为全局最低成本项。
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-3 flex gap-2">
-            <Button variant={viewMode === 'cards' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('cards')}>
-              卡片
-            </Button>
-            <Button variant={viewMode === 'table' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('table')}>
-              表格
-            </Button>
+          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex gap-2">
+              <Button variant={viewMode === 'cards' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('cards')}>
+                卡片
+              </Button>
+              <Button variant={viewMode === 'table' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('table')}>
+                表格
+              </Button>
+            </div>
+            {viewMode === 'cards' ? (
+              <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={restoreAllOptimal} disabled={carBlocks.length === 0}>
+                全部恢复为各车最优方案
+              </Button>
+            ) : null}
           </div>
 
           {cars.length === 0 ? (
             <div className="text-sm text-muted-foreground">暂无备选车型。</div>
-          ) : rows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">当前方案枚举开关组合下没有生成任何新车方案。请到「关键假设」打开更多组合。</div>
+          ) : carBlocks.length === 0 ? (
+            <div className="text-sm text-muted-foreground">当前没有可计算的新车方案（例如尚未添加车型）。</div>
           ) : (
             <>
               {viewMode === 'cards' ? (
                 <div className="grid gap-3">
-                  {rows.map((r) => {
-                    const isBest = r.key === bestKey
+                  {displayRows.map((r) => {
+                    const block = carBlocks.find((b) => b.car.id === r.car.id)!
+                    const isBest = r.key === bestKeyCards
                     const isSelected = r.key === selectedKey
+                    const keepsAvail = [...new Set(block.rows.map((x) => x.variant.keepBaoLai))].sort((a, b) => Number(a) - Number(b))
+                    const sameKeepRows = block.rows.filter((x) => x.variant.keepBaoLai === r.variant.keepBaoLai)
+                    const isOptimalForCar = r.variantKey === block.optimalKey
+                    const showKeepToggle = keepsAvail.length > 1
+                    const showPlateChoice = sameKeepRows.length > 1
+
                     return (
                       <Card
-                        key={r.key}
-                        className={[
-                          isBest ? 'border-emerald-300' : '',
-                          isSelected ? 'ring-2 ring-ring' : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
+                        key={block.car.id}
+                        className={[isBest ? 'border-emerald-300' : '', isSelected ? 'ring-2 ring-ring' : ''].filter(Boolean).join(' ')}
                       >
-                        <CardHeader className="space-y-2">
-                          <CardTitle className="text-base">{r.title}</CardTitle>
-                          <CardDescription>{r.subtitle}</CardDescription>
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline">{r.energy}</Badge>
-                            {isBest ? <Badge variant="success">当前最优</Badge> : null}
-                            {isSelected ? <Badge variant="secondary">分析对象</Badge> : null}
-                            {r.overMonthlyLimit ? <Badge variant="danger">月供超红线</Badge> : <Badge variant="secondary">月供OK</Badge>}
+                        <CardHeader className="space-y-3">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <CardTitle className="text-base">{block.car.name}</CardTitle>
+                              <CardDescription className="mt-1">{r.subtitle}</CardDescription>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="outline">{r.energy}</Badge>
+                              {isBest ? <Badge variant="success">对比中最低总成本</Badge> : null}
+                              {!isOptimalForCar ? <Badge variant="secondary">非该车最优</Badge> : null}
+                              {isSelected ? <Badge variant="secondary">分析对象</Badge> : null}
+                              {r.overMonthlyLimit ? <Badge variant="danger">月供超红线</Badge> : <Badge variant="secondary">月供OK</Badge>}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 rounded-md border bg-muted/30 p-3 text-sm">
+                            <div className="font-medium text-foreground">方案选项</div>
+                            {showKeepToggle ? (
+                              <div className="flex flex-col gap-2">
+                                <span className="text-xs text-muted-foreground">是否保留宝来</span>
+                                <div className="flex flex-wrap gap-2">
+                                  {keepsAvail.map((keep) => (
+                                    <Button
+                                      key={String(keep)}
+                                      type="button"
+                                      size="sm"
+                                      variant={r.variant.keepBaoLai === keep ? 'default' : 'outline'}
+                                      className="flex-1 sm:flex-none"
+                                      onClick={() => {
+                                        const bucket: 'keep' | 'drop' = keep ? 'keep' : 'drop'
+                                        const nk = block.optimalByKeep[bucket]
+                                        if (nk) updateVariantPick(block.car.id, nk)
+                                      }}
+                                    >
+                                      {keep ? '保留宝来' : '淘汰宝来'}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null}
+
+                            {showPlateChoice ? (
+                              <div className="flex flex-col gap-2 pt-1">
+                                <span className="text-xs text-muted-foreground">上牌策略（当前：{r.variant.keepBaoLai ? '保留宝来' : '淘汰宝来'}）</span>
+                                <div className="grid gap-1.5">
+                                  {sameKeepRows.map((opt) => (
+                                    <label
+                                      key={opt.variantKey}
+                                      className="flex cursor-pointer items-start gap-2 rounded-md border border-transparent px-2 py-1.5 hover:bg-background has-[:checked]:border-primary has-[:checked]:bg-background"
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`plate-${block.car.id}`}
+                                        className="mt-1"
+                                        checked={r.variantKey === opt.variantKey}
+                                        onChange={() => updateVariantPick(block.car.id, opt.variantKey)}
+                                      />
+                                      <span className="text-sm leading-snug">{opt.variant.label}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-xs text-muted-foreground">当前枚举下该车仅此一种上牌/持有组合。</div>
+                            )}
+
+                            <Button type="button" variant="secondary" size="sm" className="mt-1 w-full sm:w-auto" onClick={() => restoreOptimalForCar(block)}>
+                              恢复该车最优方案
+                            </Button>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                          <div className="text-xs font-medium text-muted-foreground">当前展示：{r.variant.label}</div>
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">5年总成本（合计）</span>
                             <span className="tabular-nums font-medium">{Math.round(r.total5).toLocaleString('zh-CN')}</span>
@@ -251,8 +431,8 @@ export function ResultsSection() {
                       </tr>
                     </thead>
                     <tbody>
-                      {rows.map((r) => {
-                        const isBest = r.key === bestKey
+                      {allVariantRows.map((r) => {
+                        const isBest = r.key === bestKeyTable
                         const isSelected = r.key === selectedKey
                         return (
                           <tr key={r.key} className="border-b">
