@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import type { AppStateV1, CarDraft, GlobalParams, Assumptions } from '@/domain/types'
+import demoStateJson from '@/data/demo-state.json'
 import { defaultAppState, newCarDraft } from '@/state/defaults'
 
 type AppStore = AppStateV1 & {
@@ -29,13 +30,24 @@ function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null
 }
 
+/** 只合并当前 `GlobalParams` 已知字段，忽略旧版导出中的已删除键 */
+function mergeGlobals(raw: unknown): GlobalParams {
+  const out: GlobalParams = { ...defaultAppState.globals }
+  if (!isObject(raw)) return out
+  for (const key of Object.keys(out) as (keyof GlobalParams)[]) {
+    const v = raw[key as string]
+    if (typeof v === 'number' && Number.isFinite(v)) out[key] = v
+  }
+  return out
+}
+
 function migrateToV1(raw: unknown): AppStateV1 {
   if (!isObject(raw)) return structuredClone(defaultAppState)
 
   const merged: AppStateV1 = {
     schemaVersion: 1,
     cars: Array.isArray(raw.cars) ? (raw.cars as CarDraft[]) : defaultAppState.cars,
-    globals: { ...defaultAppState.globals, ...(isObject(raw.globals) ? (raw.globals as GlobalParams) : {}) },
+    globals: mergeGlobals(raw.globals),
     assumptions: {
       ...defaultAppState.assumptions,
       ...(isObject(raw.assumptions) ? (raw.assumptions as Assumptions) : {}),
@@ -73,32 +85,8 @@ export const useAppStore = create<AppStore>()(
 
       loadDemo: () =>
         set({
-          ...structuredClone(defaultAppState),
+          ...migrateToV1(demoStateJson),
           ui: { activeTab: 'results' },
-          cars: [
-            newCarDraft({
-              name: '传祺向往 M8 PHEV（示例）',
-              energyType: 'PHEV',
-              guidePriceCny: 292_000,
-              dealerDiscountCny: 0,
-              insuranceYear1Cny: 7000,
-              manufacturerSubsidyCny: 0,
-              fuelConsumptionLPer100km: 6.2,
-              electricityConsumptionKWhPer100km: 20,
-              phevElectricKmRatioPct: 65,
-              residualRate5yPct: 52,
-            }),
-            newCarDraft({
-              name: '丰田赛那 HEV（示例）',
-              energyType: 'HEV',
-              guidePriceCny: 278_000,
-              dealerDiscountCny: 0,
-              insuranceYear1Cny: 7000,
-              manufacturerSubsidyCny: 0,
-              fuelConsumptionLPer100km: 6.0,
-              residualRate5yPct: 58,
-            }),
-          ],
         }),
 
       exportJsonBlob: () => {

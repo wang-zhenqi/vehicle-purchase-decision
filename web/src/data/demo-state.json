@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "cars": [
+    {
+      "id": "0e8b486c-e2c3-47a5-82bd-f7099e6e5b90",
+      "name": "26款赛那四驱尊贵版",
+      "energyType": "HEV",
+      "fuelConsumptionLPer100km": 6.74,
+      "electricityConsumptionKWhPer100km": 18,
+      "phevElectricKmRatioPct": 70,
+      "guidePriceCny": 359800,
+      "dealerDiscountCny": 60000,
+      "purchaseTaxCny": 26500,
+      "insuranceYear1Cny": 8000,
+      "dealerPlateFeeCny": 500,
+      "manufacturerSubsidyCny": 14000,
+      "oldCarTradeInCny": 3000,
+      "otherFeesCny": 0,
+      "residualRate5yPct": 62,
+      "annualInsuranceCny": 5500,
+      "annualMaintenanceCny": 1500
+    },
+    {
+      "id": "a8164c6b-7de1-4d8d-85d4-b0b800e7aa58",
+      "name": "2026款传祺向往 M8 宗师 激光雷达版",
+      "energyType": "PHEV",
+      "fuelConsumptionLPer100km": 7,
+      "electricityConsumptionKWhPer100km": 22,
+      "phevElectricKmRatioPct": 60,
+      "guidePriceCny": 289900,
+      "dealerDiscountCny": 0,
+      "purchaseTaxCny": 12800,
+      "insuranceYear1Cny": 9000,
+      "dealerPlateFeeCny": 500,
+      "manufacturerSubsidyCny": 8000,
+      "oldCarTradeInCny": 15000,
+      "otherFeesCny": 0,
+      "residualRate5yPct": 40
+    }
+  ],
+  "globals": {
+    "annualMileageKm": 10125,
+    "oilPriceCnyPerL": 7.5,
+    "homeOffpeakPowerCnyPerKwh": 0.3,
+    "homePeakPowerCnyPerKwh": 0.6,
+    "publicPowerCnyPerKwh": 1.2,
+    "homeOffpeakChargePct": 40,
+    "homePeakChargePct": 30,
+    "publicChargePct": 30,
+    "loanMonthlyRatePct": 0.25,
+    "downPaymentPct": 50,
+    "loanTermMonths": 60,
+    "bluePlateAuctionAvgCny": 15442,
+    "greenPlateFeeCny": 500,
+    "plateTransferFeeCny": 500,
+    "zhongshanPlateFeeCny": 300
+  },
+  "assumptions": {
+    "baolaiAnnualInsuranceCny": 2604,
+    "baolaiAnnualFuelCny": 7444,
+    "baolaiAnnualMaintenanceCny": 2400,
+    "baolaiResidualIfSoldCny": 8000,
+    "baolaiRepairReserveCnyPerYear": 3500,
+    "opportunityCostAnnualRatePct": 4,
+    "newCarInsuranceAvgFactorOfYear1": 0.85,
+    "newCarMaintenanceRateOfLandingPerYear": 0.008,
+    "monthlyPaymentLimitCny": 3000
+  }
+}
