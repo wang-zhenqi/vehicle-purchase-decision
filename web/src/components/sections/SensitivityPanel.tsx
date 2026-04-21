@@ -117,7 +117,9 @@ export function SensitivityPanel({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <CardTitle>敏感性分析（5年）</CardTitle>
-            <CardDescription>对“选中的方案”做 ±X% 扰动，观察总成本变化区间。</CardDescription>
+            <CardDescription>
+              对「选中的方案」把勾选的参数按 ±X% 变动，看 5 年总成本怎么变；表格中「影响区间」是相对基准总成本的增减范围（元），不是百分比。
+            </CardDescription>
           </div>
           <Button variant="outline" className="w-full sm:w-auto" onClick={onClear} disabled={!selected}>
             取消选择

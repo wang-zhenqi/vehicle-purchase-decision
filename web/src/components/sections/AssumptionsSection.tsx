@@ -39,7 +39,9 @@ export function AssumptionsSection() {
     <div className="space-y-4">
       <div>
         <div className="text-lg font-semibold">关键假设</div>
-        <div className="text-sm text-muted-foreground">用于补齐“不可精确测量但必须决策”的部分（风险准备金、机会成本、维保/保险简化规则等）。</div>
+        <div className="text-sm text-muted-foreground">
+          宝来继续开的年度开销、机会成本等；下方开关决定「结果」里生成哪些上牌与是否保留宝来的组合。详见页面顶部使用说明。
+        </div>
       </div>
 
       <Card>

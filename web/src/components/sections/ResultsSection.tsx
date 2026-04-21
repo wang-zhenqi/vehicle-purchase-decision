@@ -104,7 +104,9 @@ export function ResultsSection() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="text-lg font-semibold">结果</div>
-          <div className="text-sm text-muted-foreground">默认按 5 年总成本排序。点击“追溯”查看公式树。</div>
+          <div className="text-sm text-muted-foreground">
+            默认按 5 年总成本排序。总成本 = 购车成本（含能耗/保险等、已扣残值）+ 贷款利息。点击「追溯」可看逐项公式；页面顶部「第一次使用」中有各字段含义说明。
+          </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant="secondary" className="w-full sm:w-auto" onClick={() => openTrace('5年｜继续开宝来｜追溯', baseline5.trace)}>
@@ -148,7 +150,9 @@ export function ResultsSection() {
       <Card>
         <CardHeader>
           <CardTitle>新车方案排行榜（5年）</CardTitle>
-          <CardDescription>移动端默认“卡片模式”，也可切换表格模式。绿色高亮为当前排序下的最优项。</CardDescription>
+          <CardDescription>
+            移动端默认「卡片」，可切换「表格」。绿色边框为当前排序下总成本最低项。数字含义见页面顶部使用说明。
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-3 flex gap-2">

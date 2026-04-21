@@ -12,7 +12,9 @@ export function GlobalsSection() {
     <div className="space-y-4">
       <div>
         <div className="text-lg font-semibold">全局参数</div>
-        <div className="text-sm text-muted-foreground">这些参数通常不随车型变化（油价/电价/贷款/牌照费用假设等）。</div>
+        <div className="text-sm text-muted-foreground">
+          这些参数通常不随车型变化（油价/电价/贷款/牌照费用等）。不确定时可先通过工具栏「加载示例」再改；与单车差异大的项在「车型」卡片里填。
+        </div>
       </div>
 
       <Card>

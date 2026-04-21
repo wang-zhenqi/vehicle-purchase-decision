@@ -37,7 +37,9 @@ export function CarsSection() {
         <Card>
           <CardHeader>
             <CardTitle>还没有车型</CardTitle>
-            <CardDescription>建议先添加 1-3 个备选车，再去看结果页的对比。</CardDescription>
+            <CardDescription>
+              建议先添加 1～3 个备选车，填指导价/优惠/首年保险/能耗等；也可先点工具栏「加载示例」再改。然后到「假设」打开需要的方案组合，最后看「结果」。
+            </CardDescription>
           </CardHeader>
         </Card>
       ) : null}

@@ -4,6 +4,7 @@ import { CarsSection } from '@/components/sections/CarsSection'
 import { GlobalsSection } from '@/components/sections/GlobalsSection'
 import { ResultsSection } from '@/components/sections/ResultsSection'
 import { DataToolbar } from '@/components/DataToolbar'
+import { FirstTimeGuide } from '@/components/FirstTimeGuide'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/state/store'
@@ -18,7 +19,7 @@ function App() {
         <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="truncate text-base font-semibold sm:text-lg">购车决策量化计算器</div>
-            <div className="text-xs text-muted-foreground sm:text-sm">本地计算 · 可追溯 · 可导入导出（JSON/CSV）</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">本地计算 · 可追溯 · 可导入导出（JSON/CSV）· 下方有使用说明</div>
           </div>
           <div className="hidden sm:block sm:max-w-[520px]">
             <DataToolbar />
@@ -46,6 +47,10 @@ function App() {
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-4 sm:pb-10">
         <div className="mb-4 sm:hidden">
           <DataToolbar />
+        </div>
+
+        <div className="mb-4">
+          <FirstTimeGuide />
         </div>
 
         {activeTab === 'cars' ? <CarsSection /> : null}
