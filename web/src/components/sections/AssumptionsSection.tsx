@@ -112,15 +112,31 @@ export function AssumptionsSection() {
       <Card>
         <CardHeader>
           <CardTitle>方案枚举开关</CardTitle>
-          <CardDescription>控制结果页生成哪些“牌照策略 × 是否保留宝来”的组合。</CardDescription>
+          <CardDescription>
+            在「不放弃现有蓝牌指标」前提下生成组合：淘汰宝来时仅「指标落到新车」；保留宝来且需第二张蓝牌时才竞价；PHEV 双车才可「新车绿牌」。
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <ToggleRow label="包含：保留宝来" checked={pg.includeKeepBaoLai} onChange={(v) => setPg({ includeKeepBaoLai: v })} />
           <ToggleRow label="包含：淘汰宝来" checked={pg.includeDropBaoLai} onChange={(v) => setPg({ includeDropBaoLai: v })} />
-          <ToggleRow label="包含：号牌迁移/蓝换绿" checked={pg.includeTransfer} onChange={(v) => setPg({ includeTransfer: v })} />
-          <ToggleRow label="包含：蓝牌竞价" checked={pg.includeAuction} onChange={(v) => setPg({ includeAuction: v })} />
-          <ToggleRow label="包含：蓝牌摇号" checked={pg.includeLottery} onChange={(v) => setPg({ includeLottery: v })} />
-          <ToggleRow label="包含：直接绿牌" checked={pg.includeGreen} onChange={(v) => setPg({ includeGreen: v })} />
+          <ToggleRow
+            label="包含：蓝牌指标迁移"
+            checked={pg.includeTransfer}
+            onChange={(v) => setPg({ includeTransfer: v })}
+            hint="淘汰宝来：指标随置换落到新车。保留宝来：指标挂新车、宝来改外地牌（费用模型见全局「号牌迁移」）。不含深圳「蓝换绿」路径。"
+          />
+          <ToggleRow
+            label="包含：蓝牌竞价"
+            checked={pg.includeAuction}
+            onChange={(v) => setPg({ includeAuction: v })}
+            hint="仅保留宝来且新增 HEV 需第二张蓝牌时适用。"
+          />
+          <ToggleRow
+            label="包含：新车直接绿牌"
+            checked={pg.includeGreen}
+            onChange={(v) => setPg({ includeGreen: v })}
+            hint="仅保留宝来且新增 PHEV、双车并行时适用（宝来继续持蓝牌）。"
+          />
         </CardContent>
       </Card>
 

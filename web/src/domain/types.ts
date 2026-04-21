@@ -1,11 +1,7 @@
 export type EnergyType = 'HEV' | 'PHEV'
 
-export type NewCarPlateMode =
-  | 'transferBlue'
-  | 'auctionBlue'
-  | 'lotteryBlue'
-  | 'newGreen'
-  | 'blueToGreen'
+/** 上牌模式（已排除深圳「蓝换绿」类指标处置：家庭策略为不放弃现有蓝牌指标） */
+export type NewCarPlateMode = 'transferBlue' | 'auctionBlue' | 'newGreen'
 
 export type CarDraft = {
   id: string
@@ -51,19 +47,6 @@ export type GlobalParams = {
   greenPlateFeeCny: number
   plateTransferFeeCny: number
   zhongshanPlateFeeCny: number
-  bluePlateLotteryWaitMonths: number
-
-  /**
-   * 上牌摩擦成本（等待/不便/精力）——用于把“摇号等待”等非货币成本货币化
-   * 说明：仅作为决策建模输入，并非政策/真实成本。
-   */
-  plateWaitInconvenienceCnyPerMonth: number
-  plateProcessHourlyValueCny: number
-  plateProcessHoursTransfer: number
-  plateProcessHoursAuction: number
-  plateProcessHoursLottery: number
-  plateProcessHoursGreen: number
-  plateProcessHoursBlueToGreen: number
 }
 
 export type Assumptions = {
@@ -86,7 +69,6 @@ export type PlanGenerationOptions = {
   includeDropBaoLai: boolean
   includeTransfer: boolean
   includeAuction: boolean
-  includeLottery: boolean
   includeGreen: boolean
 }
 

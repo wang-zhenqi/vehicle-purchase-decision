@@ -69,6 +69,7 @@ Total = Landing + Plate - BaoLaiRecovery + LoanInterest + Opportunity + Energy +
 - **保险**：默认 `年均 = 首年 * factor`（factor 可配），可用车型字段覆盖。
 - **维保**：默认 `年均 = 落地价 * rate`（rate 可配），可用车型字段覆盖。
 - **PHEV 能耗**：按“用电里程占比”拆分为油段/电段；电价使用“加权电价”。
+- **牌照**：仅计入参数化的牌照相关货币费用（竞价、迁移、绿牌、外地牌等）；**不包含**上牌等待、办理耗时或精力的货币化。
 
 ### 宝来基线（N年）
 

@@ -10,9 +10,9 @@ flowchart TD
   plan --> landing["落地价<br/>裸车价=指导价-厂家优惠<br/>落地价=裸车价+购置税+首年保险+店端上牌费-厂家置换补贴-旧车折抵+其他费用"]
 
   plan --> plateBranch{牌照费用分支}
-  plateBranch -->|HEV| plateHEV["HEV 上牌方式<br/>蓝牌迁入: 新车牌照费=号牌迁移费用<br/>蓝牌竞价: 新车牌照费=蓝牌竞价均价<br/>蓝牌摇号: 新车牌照费=0"]
-  plateBranch -->|PHEV| platePHEV["PHEV 上牌方式<br/>直接绿牌: 新车牌照费=绿牌上牌费<br/>蓝换绿: 新车牌照费=号牌迁移费用"]
-  plateBranch --> plateBaoLaiExtra["宝来外地牌条件<br/>若保留宝来 && (蓝牌迁入||蓝换绿): 宝来外地牌=中山上牌费<br/>否则: 宝来外地牌=0"]
+  plateBranch -->|HEV| plateHEV["HEV 上牌方式<br/>蓝牌迁入: 新车牌照费=号牌迁移费用<br/>蓝牌竞价: 新车牌照费=蓝牌竞价均价"]
+  plateBranch -->|PHEV| platePHEV["PHEV 上牌方式<br/>直接绿牌: 新车牌照费=绿牌上牌费<br/>蓝牌指标迁移: 新车牌照费=号牌迁移费用（保留蓝牌口径，非深圳「蓝换绿」）"]
+  plateBranch --> plateBaoLaiExtra["宝来外地牌条件<br/>若保留宝来 && 蓝牌指标迁移: 宝来外地牌=中山上牌费<br/>否则: 宝来外地牌=0"]
   plateHEV --> plateTotal["牌照总费用<br/>牌照总费用=新车牌照费+宝来外地牌"]
   platePHEV --> plateTotal
   plateBaoLaiExtra --> plateTotal
