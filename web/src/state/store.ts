@@ -102,9 +102,14 @@ export const useAppStore = create<AppStore>()(
       },
 
       importJsonText: (text) => {
-        const raw = JSON.parse(text) as unknown
-        const migrated = migrateToV1(raw)
-        set({ ...migrated, ui: { activeTab: get().ui.activeTab } })
+        try {
+          const raw = JSON.parse(text) as unknown
+          const migrated = migrateToV1(raw)
+          set({ ...migrated, ui: { activeTab: get().ui.activeTab } })
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e)
+          alert(`导入失败：JSON 格式不正确或内容不符合预期。\n\n${msg}`)
+        }
       },
     }),
     {

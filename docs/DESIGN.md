@@ -24,7 +24,7 @@ flowchart TD
 - `domain/types.ts`：领域类型（车、全局参数、假设、状态 schema）
 - `engine/*`：计算与追溯
   - `calculator.ts`：落地价、牌照费用、能耗、贷款利息、机会成本、总成本、宝来基线
-  - `scenarios.ts`：从枚举开关生成 `PlanVariant` 列表
+  - `scenarios.ts`：按家庭策略生成合法 `PlanVariant` 列表（默认使用 `FULL_PLAN_GENERATION` 全量枚举）
   - `validate.ts`：一致性校验（例如充电占比合计）
   - `trace.ts`：追溯节点结构
   - `math.ts`：通用数学工具（月供等）
