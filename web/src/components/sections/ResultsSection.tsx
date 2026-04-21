@@ -6,12 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { TraceTree } from '@/components/trace/TraceTree'
+import { SensitivityPanel } from '@/components/sections/SensitivityPanel'
 import { computeBaoLaiCost, computeNewCarCost } from '@/engine/calculator'
 import { buildPlanVariants } from '@/engine/scenarios'
 import type { TraceNode } from '@/engine/trace'
 import { validateState } from '@/engine/validate'
 import { focusFieldByPath, tabFromFieldPath } from '@/lib/fieldNav'
 import { useAppStore } from '@/state/store'
+import type { CarDraft, PlanVariant } from '@/domain/types'
 
 type Row = {
   key: string
@@ -23,6 +25,8 @@ type Row = {
   monthly: number
   overMonthlyLimit: boolean
   trace5: TraceNode
+  car: CarDraft
+  variant: PlanVariant
 }
 
 export function ResultsSection() {
@@ -36,6 +40,7 @@ export function ResultsSection() {
   const [traceTitle, setTraceTitle] = useState('追溯')
   const [traceNode, setTraceNode] = useState<TraceNode | null>(null)
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
   const issues = useMemo(() => validateState({ schemaVersion: 1, cars, globals, assumptions, planGen }), [cars, globals, assumptions, planGen])
 
@@ -58,6 +63,8 @@ export function ResultsSection() {
           monthly: r5.monthlyPayment,
           overMonthlyLimit: r5.monthlyPayment > assumptions.monthlyPaymentLimitCny,
           trace5: r5.totalTrace,
+          car,
+          variant: v,
         })
       }
     }
@@ -66,6 +73,7 @@ export function ResultsSection() {
   }, [cars, globals, assumptions, planGen, baseline5.total])
 
   const bestKey = rows.length ? rows[0]?.key : null
+  const selectedRow = selectedKey ? rows.find((r) => r.key === selectedKey) ?? null : null
 
   function openTrace(title: string, node: TraceNode) {
     setTraceTitle(title)
@@ -156,14 +164,24 @@ export function ResultsSection() {
                 <div className="grid gap-3">
                   {rows.map((r) => {
                     const isBest = r.key === bestKey
+                    const isSelected = r.key === selectedKey
                     return (
-                      <Card key={r.key} className={isBest ? 'border-emerald-300' : undefined}>
+                      <Card
+                        key={r.key}
+                        className={[
+                          isBest ? 'border-emerald-300' : '',
+                          isSelected ? 'ring-2 ring-ring' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      >
                         <CardHeader className="space-y-2">
                           <CardTitle className="text-base">{r.title}</CardTitle>
                           <CardDescription>{r.subtitle}</CardDescription>
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="outline">{r.energy}</Badge>
                             {isBest ? <Badge variant="success">当前最优</Badge> : null}
+                            {isSelected ? <Badge variant="secondary">分析对象</Badge> : null}
                             {r.overMonthlyLimit ? <Badge variant="danger">月供超红线</Badge> : <Badge variant="secondary">月供OK</Badge>}
                           </div>
                         </CardHeader>
@@ -186,6 +204,9 @@ export function ResultsSection() {
                           <Button variant="outline" className="mt-2 w-full" onClick={() => openTrace(`${r.title}｜5年追溯`, r.trace5)}>
                             追溯
                           </Button>
+                          <Button className="w-full" variant={isSelected ? 'secondary' : 'default'} onClick={() => setSelectedKey(r.key)}>
+                            {isSelected ? '已选为分析对象' : '设为分析对象'}
+                          </Button>
                         </CardContent>
                       </Card>
                     )
@@ -201,11 +222,13 @@ export function ResultsSection() {
                         <th className="py-2 pr-3">Δ vs 宝来</th>
                         <th className="py-2 pr-3">月供</th>
                         <th className="py-2 pr-3"></th>
+                        <th className="py-2 pr-3"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map((r) => {
                         const isBest = r.key === bestKey
+                        const isSelected = r.key === selectedKey
                         return (
                           <tr key={r.key} className="border-b">
                             <td className="py-3 pr-3 align-top">
@@ -214,6 +237,7 @@ export function ResultsSection() {
                               <div className="mt-2 flex flex-wrap gap-2">
                                 <Badge variant="outline">{r.energy}</Badge>
                                 {isBest ? <Badge variant="success">当前最优</Badge> : null}
+                                {isSelected ? <Badge variant="secondary">分析对象</Badge> : null}
                                 {r.overMonthlyLimit ? <Badge variant="danger">月供超红线</Badge> : <Badge variant="secondary">月供OK</Badge>}
                               </div>
                             </td>
@@ -230,6 +254,11 @@ export function ResultsSection() {
                                 追溯
                               </Button>
                             </td>
+                            <td className="py-3 align-top">
+                              <Button className="w-full" variant={isSelected ? 'secondary' : 'default'} onClick={() => setSelectedKey(r.key)}>
+                                {isSelected ? '已选' : '选为分析'}
+                              </Button>
+                            </td>
                           </tr>
                         )
                       })}
@@ -241,6 +270,24 @@ export function ResultsSection() {
           )}
         </CardContent>
       </Card>
+
+      <Separator />
+
+      <SensitivityPanel
+        selected={
+          selectedRow
+            ? {
+                car: selectedRow.car,
+                variant: selectedRow.variant,
+                title: selectedRow.title,
+                total5: selectedRow.total5,
+              }
+            : null
+        }
+        globals={globals}
+        assumptions={assumptions}
+        onClear={() => setSelectedKey(null)}
+      />
 
       <Separator />
 
