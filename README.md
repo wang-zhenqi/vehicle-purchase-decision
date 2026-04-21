@@ -1,0 +1,36 @@
+# VehiclePurchaseDecision / 购车决策量化计算器
+
+本仓库包含一个面向家庭购车决策的 Web 计算器：**输入可配置、结果可解释（追溯树）、支持导入导出**，并针对**手机浏览器**做了布局优化。
+
+## 目录结构
+
+- `web/`：前端工程（React + TypeScript + Vite + Tailwind）
+- `docs/`：项目文档（PRD / 设计 / 部署）
+- `dialogue.txt`：原始对话记录（需求来源）
+- `购车计算器.html`：早期单文件样例（不作为最终产品形态）
+
+## 本地开发
+
+要求：Node.js **20+**（你当前环境为 20.19.5）
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+构建：
+
+```bash
+cd web
+npm run build
+npm run preview
+```
+
+## 文档
+
+见：
+
+- [docs/PRD.md](docs/PRD.md)
+- [docs/DESIGN.md](docs/DESIGN.md)
+- [docs/DEPLOY.md](docs/DEPLOY.md)
