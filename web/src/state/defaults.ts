@@ -50,6 +50,14 @@ export const defaultAppState: AppStateV1 = {
     plateTransferFeeCny: 500,
     zhongshanPlateFeeCny: 1000,
     bluePlateLotteryWaitMonths: 6,
+
+    plateWaitInconvenienceCnyPerMonth: 0,
+    plateProcessHourlyValueCny: 200,
+    plateProcessHoursTransfer: 2,
+    plateProcessHoursAuction: 2,
+    plateProcessHoursLottery: 1,
+    plateProcessHoursGreen: 1,
+    plateProcessHoursBlueToGreen: 2,
   },
   assumptions: {
     baolaiAnnualInsuranceCny: 2604,

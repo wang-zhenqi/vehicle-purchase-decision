@@ -21,6 +21,9 @@ type Row = {
   subtitle: string
   energy: string
   total5: number
+  purchase5: number
+  interest5: number
+  residual5: number
   delta5: number
   monthly: number
   overMonthlyLimit: boolean
@@ -59,6 +62,9 @@ export function ResultsSection() {
           subtitle: `${car.energyType}｜${v.keepBaoLai ? '保留宝来' : '淘汰宝来'}`,
           energy: car.energyType,
           total5: r5.total,
+          purchase5: r5.purchaseCost,
+          interest5: r5.loanInterest,
+          residual5: r5.residual,
           delta5: r5.total - baseline5.total,
           monthly: r5.monthlyPayment,
           overMonthlyLimit: r5.monthlyPayment > assumptions.monthlyPaymentLimitCny,
@@ -187,8 +193,20 @@ export function ResultsSection() {
                         </CardHeader>
                         <CardContent className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">5年总成本</span>
+                            <span className="text-muted-foreground">5年总成本（合计）</span>
                             <span className="tabular-nums font-medium">{Math.round(r.total5).toLocaleString('zh-CN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">其中：购车成本</span>
+                            <span className="tabular-nums">{Math.round(r.purchase5).toLocaleString('zh-CN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">其中：贷款利息</span>
+                            <span className="tabular-nums">{Math.round(r.interest5).toLocaleString('zh-CN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">5年残值（单列）</span>
+                            <span className="tabular-nums">{Math.round(r.residual5).toLocaleString('zh-CN')}</span>
                           </div>
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Δ vs 宝来</span>
@@ -218,7 +236,10 @@ export function ResultsSection() {
                     <thead>
                       <tr className="border-b text-left text-xs text-muted-foreground">
                         <th className="py-2 pr-3">方案</th>
-                        <th className="py-2 pr-3">5年总成本</th>
+                        <th className="py-2 pr-3">5年总成本(合计)</th>
+                        <th className="py-2 pr-3">购车成本</th>
+                        <th className="py-2 pr-3">贷款利息</th>
+                        <th className="py-2 pr-3">残值</th>
                         <th className="py-2 pr-3">Δ vs 宝来</th>
                         <th className="py-2 pr-3">月供</th>
                         <th className="py-2 pr-3"></th>
@@ -242,6 +263,9 @@ export function ResultsSection() {
                               </div>
                             </td>
                             <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.total5).toLocaleString('zh-CN')}</td>
+                            <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.purchase5).toLocaleString('zh-CN')}</td>
+                            <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.interest5).toLocaleString('zh-CN')}</td>
+                            <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.residual5).toLocaleString('zh-CN')}</td>
                             <td className="py-3 pr-3 align-top tabular-nums">
                               <span className={r.delta5 <= 0 ? 'text-emerald-700' : 'text-red-700'}>
                                 {r.delta5 <= 0 ? '-' : '+'}

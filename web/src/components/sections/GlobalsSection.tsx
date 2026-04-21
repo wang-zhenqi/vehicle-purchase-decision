@@ -112,6 +112,82 @@ export function GlobalsSection() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>上牌摩擦成本（等待/不便/精力）</CardTitle>
+          <CardDescription>
+            用于把“等待时间、精力与不便”货币化，作为方案的额外成本。默认不启用（可把每月不便成本设为0）。
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label>等待期间每月不便成本（元/月）</Label>
+            <Input
+              data-field="globals.plateWaitInconvenienceCnyPerMonth"
+              inputMode="numeric"
+              value={g.plateWaitInconvenienceCnyPerMonth}
+              onChange={(e) => set({ plateWaitInconvenienceCnyPerMonth: Number(e.target.value) })}
+            />
+            <div className="mt-1 text-xs text-muted-foreground">只对“摇号”等存在等待月数的上牌方式生效。</div>
+          </div>
+          <div>
+            <Label>你的时间价值（元/小时）</Label>
+            <Input
+              data-field="globals.plateProcessHourlyValueCny"
+              inputMode="numeric"
+              value={g.plateProcessHourlyValueCny}
+              onChange={(e) => set({ plateProcessHourlyValueCny: Number(e.target.value) })}
+            />
+          </div>
+
+          <div>
+            <Label>办理耗时：号牌迁移（小时）</Label>
+            <Input
+              data-field="globals.plateProcessHoursTransfer"
+              inputMode="decimal"
+              value={g.plateProcessHoursTransfer}
+              onChange={(e) => set({ plateProcessHoursTransfer: Number(e.target.value) })}
+            />
+          </div>
+          <div>
+            <Label>办理耗时：蓝牌竞价（小时）</Label>
+            <Input
+              data-field="globals.plateProcessHoursAuction"
+              inputMode="decimal"
+              value={g.plateProcessHoursAuction}
+              onChange={(e) => set({ plateProcessHoursAuction: Number(e.target.value) })}
+            />
+          </div>
+          <div>
+            <Label>办理耗时：蓝牌摇号（小时）</Label>
+            <Input
+              data-field="globals.plateProcessHoursLottery"
+              inputMode="decimal"
+              value={g.plateProcessHoursLottery}
+              onChange={(e) => set({ plateProcessHoursLottery: Number(e.target.value) })}
+            />
+          </div>
+          <div>
+            <Label>办理耗时：直接绿牌（小时）</Label>
+            <Input
+              data-field="globals.plateProcessHoursGreen"
+              inputMode="decimal"
+              value={g.plateProcessHoursGreen}
+              onChange={(e) => set({ plateProcessHoursGreen: Number(e.target.value) })}
+            />
+          </div>
+          <div>
+            <Label>办理耗时：蓝换绿（小时）</Label>
+            <Input
+              data-field="globals.plateProcessHoursBlueToGreen"
+              inputMode="decimal"
+              value={g.plateProcessHoursBlueToGreen}
+              onChange={(e) => set({ plateProcessHoursBlueToGreen: Number(e.target.value) })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <Separator />
     </div>
   )

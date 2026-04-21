@@ -20,6 +20,8 @@ type ParamKey =
   | 'globals.oilPriceCnyPerL'
   | 'globals.annualMileageKm'
   | 'globals.loanMonthlyRatePct'
+  | 'globals.bluePlateLotteryWaitMonths'
+  | 'globals.plateWaitInconvenienceCnyPerMonth'
   | 'assumptions.opportunityCostAnnualRatePct'
   | 'car.residualRate5yPct'
   | 'car.phevElectricKmRatioPct'
@@ -31,6 +33,8 @@ const paramMeta: Record<
   'globals.oilPriceCnyPerL': { label: '油价', unit: '元/L', applies: () => true },
   'globals.annualMileageKm': { label: '年均里程', unit: 'km/年', applies: () => true },
   'globals.loanMonthlyRatePct': { label: '贷款月息', unit: '%', applies: () => true },
+  'globals.bluePlateLotteryWaitMonths': { label: '摇号等待月数', unit: '月', applies: () => true },
+  'globals.plateWaitInconvenienceCnyPerMonth': { label: '等待每月不便成本', unit: '元/月', applies: () => true },
   'assumptions.opportunityCostAnnualRatePct': { label: '机会成本收益率', unit: '%/年', applies: () => true },
   'car.residualRate5yPct': { label: '5年保值率', unit: '%', applies: () => true },
   'car.phevElectricKmRatioPct': { label: '用电里程占比', unit: '%', applies: (p) => p.car.energyType === 'PHEV' },
@@ -60,6 +64,8 @@ export function SensitivityPanel({
     'globals.oilPriceCnyPerL': true,
     'globals.annualMileageKm': true,
     'globals.loanMonthlyRatePct': false,
+    'globals.bluePlateLotteryWaitMonths': false,
+    'globals.plateWaitInconvenienceCnyPerMonth': false,
     'assumptions.opportunityCostAnnualRatePct': false,
     'car.residualRate5yPct': true,
     'car.phevElectricKmRatioPct': false,
@@ -100,6 +106,9 @@ export function SensitivityPanel({
         if (k === 'globals.oilPriceCnyPerL') g2.oilPriceCnyPerL = applyDelta(g2.oilPriceCnyPerL, dPct)
         if (k === 'globals.annualMileageKm') g2.annualMileageKm = applyDelta(g2.annualMileageKm, dPct)
         if (k === 'globals.loanMonthlyRatePct') g2.loanMonthlyRatePct = applyDelta(g2.loanMonthlyRatePct, dPct)
+        if (k === 'globals.bluePlateLotteryWaitMonths') g2.bluePlateLotteryWaitMonths = applyDelta(g2.bluePlateLotteryWaitMonths, dPct)
+        if (k === 'globals.plateWaitInconvenienceCnyPerMonth')
+          g2.plateWaitInconvenienceCnyPerMonth = applyDelta(g2.plateWaitInconvenienceCnyPerMonth, dPct)
         if (k === 'assumptions.opportunityCostAnnualRatePct')
           a2.opportunityCostAnnualRatePct = applyDelta(a2.opportunityCostAnnualRatePct, dPct)
         if (k === 'car.residualRate5yPct') c2.residualRate5yPct = applyDelta(c2.residualRate5yPct, dPct)

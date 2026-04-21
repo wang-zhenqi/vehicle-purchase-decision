@@ -221,16 +221,102 @@ export function plateCostTrace(args: {
   }
 }
 
+export function plateFrictionCostTrace(args: {
+  energyType: CarDraft['energyType']
+  mode: PlanVariant['newCarPlateMode']
+  g: GlobalParams
+}): { total: number; trace: TraceNode } {
+  const { mode, g } = args
+
+  const waitMonths = mode === 'lotteryBlue' ? g.bluePlateLotteryWaitMonths : 0
+  const waitCost = waitMonths * g.plateWaitInconvenienceCnyPerMonth
+
+  let hours = 0
+  if (mode === 'transferBlue') hours = g.plateProcessHoursTransfer
+  else if (mode === 'auctionBlue') hours = g.plateProcessHoursAuction
+  else if (mode === 'lotteryBlue') hours = g.plateProcessHoursLottery
+  else if (mode === 'newGreen') hours = g.plateProcessHoursGreen
+  else if (mode === 'blueToGreen') hours = g.plateProcessHoursBlueToGreen
+
+  const timeCost = hours * g.plateProcessHourlyValueCny
+  const total = waitCost + timeCost
+
+  return {
+    total,
+    trace: node({
+      id: nextTraceId('plate_friction'),
+      label: '上牌摩擦成本（等待不便 + 办理时间）',
+      unit: 'CNY',
+      value: total,
+      formula: '等待月数×每月不便成本 + 办理耗时×时薪',
+      children: [
+        leafNumber({
+          id: nextTraceId('plate_f_in'),
+          label: '等待月数（仅摇号）',
+          unit: '月',
+          value: waitMonths,
+          sources: [{ kind: 'global', path: 'globals.bluePlateLotteryWaitMonths' }],
+        }),
+        leafNumber({
+          id: nextTraceId('plate_f_in'),
+          label: '每月不便成本',
+          unit: 'CNY/月',
+          value: g.plateWaitInconvenienceCnyPerMonth,
+          sources: [{ kind: 'global', path: 'globals.plateWaitInconvenienceCnyPerMonth' }],
+        }),
+        leafNumber({
+          id: nextTraceId('plate_f_mid'),
+          label: '等待不便成本',
+          unit: 'CNY',
+          value: waitCost,
+          formula: '等待月数×每月不便成本',
+        }),
+        leafNumber({
+          id: nextTraceId('plate_f_in'),
+          label: '办理耗时',
+          unit: '小时',
+          value: hours,
+          sources: [
+            { kind: 'global', path: 'globals.plateProcessHoursTransfer' },
+            { kind: 'global', path: 'globals.plateProcessHoursAuction' },
+            { kind: 'global', path: 'globals.plateProcessHoursLottery' },
+            { kind: 'global', path: 'globals.plateProcessHoursGreen' },
+            { kind: 'global', path: 'globals.plateProcessHoursBlueToGreen' },
+          ],
+        }),
+        leafNumber({
+          id: nextTraceId('plate_f_in'),
+          label: '时薪（时间价值）',
+          unit: 'CNY/小时',
+          value: g.plateProcessHourlyValueCny,
+          sources: [{ kind: 'global', path: 'globals.plateProcessHourlyValueCny' }],
+        }),
+        leafNumber({
+          id: nextTraceId('plate_f_mid'),
+          label: '办理时间成本',
+          unit: 'CNY',
+          value: timeCost,
+          formula: '办理耗时×时薪',
+        }),
+      ],
+    }),
+  }
+}
+
 export type NewCarCostResult = {
   years: number
   landing: number
   landingTrace: TraceNode
   plate: number
   plateTrace: TraceNode
+  plateFriction: number
+  plateFrictionTrace: TraceNode
   baolaiRecovery: number
   loanPrincipal: number
   monthlyPayment: number
   loanInterest: number
+  purchaseCost: number
+  purchaseCostTrace: TraceNode
   opportunityCost: number
   energy: number
   energyTrace: TraceNode
@@ -259,6 +345,11 @@ export function computeNewCarCost(args: {
   const plate = plateCostTrace({
     energyType: car.energyType,
     keepBaoLai: plan.keepBaoLai,
+    mode: plan.newCarPlateMode,
+    g: globals,
+  })
+  const plateFriction = plateFrictionCostTrace({
+    energyType: car.energyType,
     mode: plan.newCarPlateMode,
     g: globals,
   })
@@ -401,16 +492,56 @@ export function computeNewCarCost(args: {
 
   const residual = landing * clamp01(car.residualRate5yPct / 100)
 
-  const total =
-    landing +
-    plate.total -
-    baolaiRecovery +
-    loanInterest +
-    opportunityCost +
-    energy +
-    insurance +
-    maintenance -
-    residual
+  const purchaseCost =
+    landing + plate.total + plateFriction.total - baolaiRecovery + opportunityCost + energy + insurance + maintenance - residual
+
+  const total = purchaseCost + loanInterest
+
+  const purchaseCostTrace = node({
+    id: nextTraceId('purchase'),
+    label: `${y}年购车成本（不含贷款利息）`,
+    unit: 'CNY',
+    value: purchaseCost,
+    formula:
+      '落地价 + 牌照费用 + 上牌摩擦成本 - 淘汰宝来残值回收 + 机会成本 + 能耗 + 保险 + 维保 - 残值',
+    children: [
+      landingTrace,
+      plate.trace,
+      plateFriction.trace,
+      leafNumber({
+        id: nextTraceId('purchase_in'),
+        label: '淘汰宝来残值回收（若保留则为0）',
+        unit: 'CNY',
+        value: baolaiRecovery,
+        sources: [{ kind: 'assumption', path: 'assumptions.baolaiResidualIfSoldCny' }],
+      }),
+      leafNumber({
+        id: nextTraceId('purchase_in'),
+        label: '首付机会成本（线性：首付×年化×年数）',
+        unit: 'CNY',
+        value: opportunityCost,
+      }),
+      energyTrace,
+      leafNumber({
+        id: nextTraceId('purchase_in'),
+        label: '保险（年均×年数）',
+        unit: 'CNY',
+        value: insurance,
+      }),
+      leafNumber({
+        id: nextTraceId('purchase_in'),
+        label: '维保（按落地价比例×年数，或车型覆盖）',
+        unit: 'CNY',
+        value: maintenance,
+      }),
+      leafNumber({
+        id: nextTraceId('purchase_in'),
+        label: '残值（按落地价×保值率）',
+        unit: 'CNY',
+        value: residual,
+      }),
+    ],
+  })
 
   const totalTrace = node({
     id: nextTraceId('total'),
@@ -418,47 +549,14 @@ export function computeNewCarCost(args: {
     unit: 'CNY',
     value: total,
     formula:
-      '落地价 + 牌照 - 淘汰宝来残值回收 + 贷款利息 + 机会成本 + 能耗 + 保险 + 维保 - 残值（注意：贷款本金偿还不计入费用）',
+      '总成本 = 购车成本（不含贷款利息） + 贷款利息（注意：本金偿还不计入费用）',
     children: [
-      landingTrace,
-      plate.trace,
-      leafNumber({
-        id: nextTraceId('total_in'),
-        label: '淘汰宝来残值回收（若保留则为0）',
-        unit: 'CNY',
-        value: baolaiRecovery,
-        sources: [{ kind: 'assumption', path: 'assumptions.baolaiResidualIfSoldCny' }],
-      }),
+      purchaseCostTrace,
       leafNumber({
         id: nextTraceId('total_in'),
         label: '贷款利息（按月息等额本息，期数用全局贷款期）',
         unit: 'CNY',
         value: loanInterest,
-      }),
-      leafNumber({
-        id: nextTraceId('total_in'),
-        label: '首付机会成本（线性：首付×年化×年数）',
-        unit: 'CNY',
-        value: opportunityCost,
-      }),
-      energyTrace,
-      leafNumber({
-        id: nextTraceId('total_in'),
-        label: '保险（年均×年数）',
-        unit: 'CNY',
-        value: insurance,
-      }),
-      leafNumber({
-        id: nextTraceId('total_in'),
-        label: '维保（按落地价比例×年数，或车型覆盖）',
-        unit: 'CNY',
-        value: maintenance,
-      }),
-      leafNumber({
-        id: nextTraceId('total_in'),
-        label: '残值（按落地价×保值率）',
-        unit: 'CNY',
-        value: residual,
       }),
     ],
   })
@@ -469,10 +567,14 @@ export function computeNewCarCost(args: {
     landingTrace,
     plate: plate.total,
     plateTrace: plate.trace,
+    plateFriction: plateFriction.total,
+    plateFrictionTrace: plateFriction.trace,
     baolaiRecovery,
     loanPrincipal,
     monthlyPayment: pay,
     loanInterest,
+    purchaseCost,
+    purchaseCostTrace,
     opportunityCost,
     energy,
     energyTrace,
