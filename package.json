@@ -1,0 +1,16 @@
+{
+  "name": "vehicle-purchase-decision",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "postinstall": "npm --prefix web ci",
+    "dev": "npm --prefix web run dev -- --host",
+    "build": "npm --prefix web run build",
+    "lint": "npm --prefix web run lint",
+    "test": "npm --prefix web run test"
+  }
+}
+

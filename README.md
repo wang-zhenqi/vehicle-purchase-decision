@@ -19,13 +19,17 @@ npm install
 npm run dev
 ```
 
+终端里会出现 **Local** 与 **Network** 地址（例如 `http://192.168.x.x:5173/`）。手机与电脑连**同一 WiFi**，在手机浏览器打开 **Network** 那一行即可。若打不开，检查本机防火墙是否放行 Node/Vite，或确认没有隔离访客 WiFi（AP isolation）。
+
 构建：
 
 ```bash
 cd web
 npm run build
-npm run preview
+npm run preview -- --host
 ```
+
+`preview` 加 `--host` 后同样会显示局域网 URL，便于手机访问构建产物预览。
 
 ## 文档
 
