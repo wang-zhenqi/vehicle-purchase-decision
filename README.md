@@ -34,3 +34,5 @@ npm run preview
 - [docs/PRD.md](docs/PRD.md)
 - [docs/DESIGN.md](docs/DESIGN.md)
 - [docs/DEPLOY.md](docs/DEPLOY.md)
+- [docs/CALC_PROCEDURE.md](docs/CALC_PROCEDURE.md)（输入→计算 Mermaid 流程）
+- [docs/BACKLOG.md](docs/BACKLOG.md)（延迟购买等后续议题）

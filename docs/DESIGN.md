@@ -30,6 +30,8 @@ flowchart TD
   - `math.ts`：通用数学工具（月供等）
 - `state/*`：默认数据、store、导入迁移
 - `components/*`：页面区块与 UI 原语（Tailwind + Radix）
+  - 结果区：`ResultsSection`（卡片/表格、成本与利息拆分、`SensitivityPanel`）
+  - 追溯：`TraceTree` + Dialog；`fieldNav` 根据 `sources.path` 切换 Tab 并聚焦输入
 
 ## 关键数据结构
 
@@ -50,7 +52,7 @@ flowchart TD
 - `sources?`：指向输入路径（`input/global/assumption/constant`）
 - `children?`：子节点
 
-> 第一期 UI 主要展示 `label + value + formula + children`；`sources` 会在后续增强为可点击定位到表单字段。
+> UI 展示 `label + value + formula + children`；`input` / `global` / `assumption` 类型的 `sources` 已支持点击跳转对应 `data-field` 输入并短暂高亮。
 
 ## 计算模型（第一版）与已知简化
 
@@ -96,6 +98,7 @@ Total = Fuel + Insurance + Maintenance + RepairReserve - Residual_{model}
 
 - 简化导出：方案、5年总成本、Δvs 宝来、月供
 
-## 测试策略（后续）
+## 测试策略
 
-- `vitest` 针对 `engine/*` 做金标测试（给定输入快照，断言输出与追溯总值一致）
+- `vitest`：`engine/__tests__/calculator.test.ts`（落地价、新车/宝来追溯总值与合计一致）
+- `vitest`：`engine/__tests__/scenarios.test.ts`（方案枚举与家庭蓝牌策略约束）
