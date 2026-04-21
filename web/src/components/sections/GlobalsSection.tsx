@@ -23,35 +23,35 @@ export function GlobalsSection() {
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>年均行驶里程（km/年）</Label>
-            <Input inputMode="numeric" value={g.annualMileageKm} onChange={(e) => set({ annualMileageKm: Number(e.target.value) })} />
+            <Input data-field="globals.annualMileageKm" inputMode="numeric" value={g.annualMileageKm} onChange={(e) => set({ annualMileageKm: Number(e.target.value) })} />
           </div>
           <div>
             <Label>油价（元/L）</Label>
-            <Input inputMode="decimal" value={g.oilPriceCnyPerL} onChange={(e) => set({ oilPriceCnyPerL: Number(e.target.value) })} />
+            <Input data-field="globals.oilPriceCnyPerL" inputMode="decimal" value={g.oilPriceCnyPerL} onChange={(e) => set({ oilPriceCnyPerL: Number(e.target.value) })} />
           </div>
           <div>
             <Label>家庭谷时电价（元/kWh）</Label>
-            <Input inputMode="decimal" value={g.homeOffpeakPowerCnyPerKwh} onChange={(e) => set({ homeOffpeakPowerCnyPerKwh: Number(e.target.value) })} />
+            <Input data-field="globals.homeOffpeakPowerCnyPerKwh" inputMode="decimal" value={g.homeOffpeakPowerCnyPerKwh} onChange={(e) => set({ homeOffpeakPowerCnyPerKwh: Number(e.target.value) })} />
           </div>
           <div>
             <Label>家庭峰时电价（元/kWh）</Label>
-            <Input inputMode="decimal" value={g.homePeakPowerCnyPerKwh} onChange={(e) => set({ homePeakPowerCnyPerKwh: Number(e.target.value) })} />
+            <Input data-field="globals.homePeakPowerCnyPerKwh" inputMode="decimal" value={g.homePeakPowerCnyPerKwh} onChange={(e) => set({ homePeakPowerCnyPerKwh: Number(e.target.value) })} />
           </div>
           <div>
             <Label>公共桩电价（元/kWh）</Label>
-            <Input inputMode="decimal" value={g.publicPowerCnyPerKwh} onChange={(e) => set({ publicPowerCnyPerKwh: Number(e.target.value) })} />
+            <Input data-field="globals.publicPowerCnyPerKwh" inputMode="decimal" value={g.publicPowerCnyPerKwh} onChange={(e) => set({ publicPowerCnyPerKwh: Number(e.target.value) })} />
           </div>
           <div>
             <Label>谷时充电占比（%）</Label>
-            <Input inputMode="numeric" value={g.homeOffpeakChargePct} onChange={(e) => set({ homeOffpeakChargePct: Number(e.target.value) })} />
+            <Input data-field="globals.homeOffpeakChargePct" inputMode="numeric" value={g.homeOffpeakChargePct} onChange={(e) => set({ homeOffpeakChargePct: Number(e.target.value) })} />
           </div>
           <div>
             <Label>峰时充电占比（%）</Label>
-            <Input inputMode="numeric" value={g.homePeakChargePct} onChange={(e) => set({ homePeakChargePct: Number(e.target.value) })} />
+            <Input data-field="globals.homePeakChargePct" inputMode="numeric" value={g.homePeakChargePct} onChange={(e) => set({ homePeakChargePct: Number(e.target.value) })} />
           </div>
           <div>
             <Label>公共充电占比（%）</Label>
-            <Input inputMode="numeric" value={g.publicChargePct} onChange={(e) => set({ publicChargePct: Number(e.target.value) })} />
+            <Input data-field="globals.publicChargePct" inputMode="numeric" value={g.publicChargePct} onChange={(e) => set({ publicChargePct: Number(e.target.value) })} />
           </div>
         </CardContent>
       </Card>
@@ -64,15 +64,15 @@ export function GlobalsSection() {
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>贷款月息（%，例如 0.25）</Label>
-            <Input inputMode="decimal" value={g.loanMonthlyRatePct} onChange={(e) => set({ loanMonthlyRatePct: Number(e.target.value) })} />
+            <Input data-field="globals.loanMonthlyRatePct" inputMode="decimal" value={g.loanMonthlyRatePct} onChange={(e) => set({ loanMonthlyRatePct: Number(e.target.value) })} />
           </div>
           <div>
             <Label>首付比例（%）</Label>
-            <Input inputMode="numeric" value={g.downPaymentPct} onChange={(e) => set({ downPaymentPct: Number(e.target.value) })} />
+            <Input data-field="globals.downPaymentPct" inputMode="numeric" value={g.downPaymentPct} onChange={(e) => set({ downPaymentPct: Number(e.target.value) })} />
           </div>
           <div>
             <Label>贷款期数（月）</Label>
-            <Input inputMode="numeric" value={g.loanTermMonths} onChange={(e) => set({ loanTermMonths: Number(e.target.value) })} />
+            <Input data-field="globals.loanTermMonths" inputMode="numeric" value={g.loanTermMonths} onChange={(e) => set({ loanTermMonths: Number(e.target.value) })} />
           </div>
         </CardContent>
       </Card>
@@ -85,23 +85,24 @@ export function GlobalsSection() {
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>蓝牌竞价平均价格（元）</Label>
-            <Input inputMode="numeric" value={g.bluePlateAuctionAvgCny} onChange={(e) => set({ bluePlateAuctionAvgCny: Number(e.target.value) })} />
+            <Input data-field="globals.bluePlateAuctionAvgCny" inputMode="numeric" value={g.bluePlateAuctionAvgCny} onChange={(e) => set({ bluePlateAuctionAvgCny: Number(e.target.value) })} />
           </div>
           <div>
             <Label>绿牌上牌费（元）</Label>
-            <Input inputMode="numeric" value={g.greenPlateFeeCny} onChange={(e) => set({ greenPlateFeeCny: Number(e.target.value) })} />
+            <Input data-field="globals.greenPlateFeeCny" inputMode="numeric" value={g.greenPlateFeeCny} onChange={(e) => set({ greenPlateFeeCny: Number(e.target.value) })} />
           </div>
           <div>
             <Label>号牌迁移/换牌费用（元）</Label>
-            <Input inputMode="numeric" value={g.plateTransferFeeCny} onChange={(e) => set({ plateTransferFeeCny: Number(e.target.value) })} />
+            <Input data-field="globals.plateTransferFeeCny" inputMode="numeric" value={g.plateTransferFeeCny} onChange={(e) => set({ plateTransferFeeCny: Number(e.target.value) })} />
           </div>
           <div>
             <Label>中山上牌费用（元）</Label>
-            <Input inputMode="numeric" value={g.zhongshanPlateFeeCny} onChange={(e) => set({ zhongshanPlateFeeCny: Number(e.target.value) })} />
+            <Input data-field="globals.zhongshanPlateFeeCny" inputMode="numeric" value={g.zhongshanPlateFeeCny} onChange={(e) => set({ zhongshanPlateFeeCny: Number(e.target.value) })} />
           </div>
           <div>
             <Label>蓝牌摇号等待时长（月，占位）</Label>
             <Input
+              data-field="globals.bluePlateLotteryWaitMonths"
               inputMode="numeric"
               value={g.bluePlateLotteryWaitMonths}
               onChange={(e) => set({ bluePlateLotteryWaitMonths: Number(e.target.value) })}

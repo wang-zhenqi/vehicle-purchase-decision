@@ -10,6 +10,7 @@ import { computeBaoLaiCost, computeNewCarCost } from '@/engine/calculator'
 import { buildPlanVariants } from '@/engine/scenarios'
 import type { TraceNode } from '@/engine/trace'
 import { validateState } from '@/engine/validate'
+import { focusFieldByPath, tabFromFieldPath } from '@/lib/fieldNav'
 import { useAppStore } from '@/state/store'
 
 type Row = {
@@ -29,10 +30,12 @@ export function ResultsSection() {
   const globals = useAppStore((s) => s.globals)
   const assumptions = useAppStore((s) => s.assumptions)
   const planGen = useAppStore((s) => s.planGen)
+  const setActiveTab = useAppStore((s) => s.setActiveTab)
 
   const [traceOpen, setTraceOpen] = useState(false)
   const [traceTitle, setTraceTitle] = useState('追溯')
   const [traceNode, setTraceNode] = useState<TraceNode | null>(null)
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
 
   const issues = useMemo(() => validateState({ schemaVersion: 1, cars, globals, assumptions, planGen }), [cars, globals, assumptions, planGen])
 
@@ -68,6 +71,18 @@ export function ResultsSection() {
     setTraceTitle(title)
     setTraceNode(node)
     setTraceOpen(true)
+  }
+
+  function handleNavigate(path: string) {
+    const tab = tabFromFieldPath(path)
+    if (tab) {
+      setTraceOpen(false)
+      setActiveTab(tab)
+      // Wait for tab render, then focus.
+      window.setTimeout(() => {
+        focusFieldByPath(path)
+      }, 50)
+    }
   }
 
   return (
@@ -119,58 +134,110 @@ export function ResultsSection() {
       <Card>
         <CardHeader>
           <CardTitle>新车方案排行榜（5年）</CardTitle>
-          <CardDescription>移动端可横向滑动表格。绿色高亮为当前排序下的最优项。</CardDescription>
+          <CardDescription>移动端默认“卡片模式”，也可切换表格模式。绿色高亮为当前排序下的最优项。</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-3 flex gap-2">
+            <Button variant={viewMode === 'cards' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('cards')}>
+              卡片
+            </Button>
+            <Button variant={viewMode === 'table' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('table')}>
+              表格
+            </Button>
+          </div>
+
           {cars.length === 0 ? (
             <div className="text-sm text-muted-foreground">暂无备选车型。</div>
           ) : rows.length === 0 ? (
             <div className="text-sm text-muted-foreground">当前方案枚举开关组合下没有生成任何新车方案。请到「关键假设」打开更多组合。</div>
           ) : (
-            <div className="-mx-4 overflow-x-auto px-4">
-              <table className="w-full min-w-[980px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b text-left text-xs text-muted-foreground">
-                    <th className="py-2 pr-3">方案</th>
-                    <th className="py-2 pr-3">5年总成本</th>
-                    <th className="py-2 pr-3">Δ vs 宝来</th>
-                    <th className="py-2 pr-3">月供</th>
-                    <th className="py-2 pr-3"></th>
-                  </tr>
-                </thead>
-                <tbody>
+            <>
+              {viewMode === 'cards' ? (
+                <div className="grid gap-3">
                   {rows.map((r) => {
                     const isBest = r.key === bestKey
                     return (
-                      <tr key={r.key} className="border-b">
-                        <td className="py-3 pr-3 align-top">
-                          <div className="font-medium">{r.title}</div>
-                          <div className="text-xs text-muted-foreground">{r.subtitle}</div>
-                          <div className="mt-2 flex flex-wrap gap-2">
+                      <Card key={r.key} className={isBest ? 'border-emerald-300' : undefined}>
+                        <CardHeader className="space-y-2">
+                          <CardTitle className="text-base">{r.title}</CardTitle>
+                          <CardDescription>{r.subtitle}</CardDescription>
+                          <div className="flex flex-wrap gap-2">
                             <Badge variant="outline">{r.energy}</Badge>
                             {isBest ? <Badge variant="success">当前最优</Badge> : null}
                             {r.overMonthlyLimit ? <Badge variant="danger">月供超红线</Badge> : <Badge variant="secondary">月供OK</Badge>}
                           </div>
-                        </td>
-                        <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.total5).toLocaleString('zh-CN')}</td>
-                        <td className="py-3 pr-3 align-top tabular-nums">
-                          <span className={r.delta5 <= 0 ? 'text-emerald-700' : 'text-red-700'}>
-                            {r.delta5 <= 0 ? '-' : '+'}
-                            {Math.abs(Math.round(r.delta5)).toLocaleString('zh-CN')}
-                          </span>
-                        </td>
-                        <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.monthly).toLocaleString('zh-CN')}</td>
-                        <td className="py-3 align-top">
-                          <Button variant="outline" className="w-full" onClick={() => openTrace(`${r.title}｜5年追溯`, r.trace5)}>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">5年总成本</span>
+                            <span className="tabular-nums font-medium">{Math.round(r.total5).toLocaleString('zh-CN')}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Δ vs 宝来</span>
+                            <span className={r.delta5 <= 0 ? 'tabular-nums text-emerald-700' : 'tabular-nums text-red-700'}>
+                              {r.delta5 <= 0 ? '-' : '+'}
+                              {Math.abs(Math.round(r.delta5)).toLocaleString('zh-CN')}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">月供</span>
+                            <span className="tabular-nums">{Math.round(r.monthly).toLocaleString('zh-CN')}</span>
+                          </div>
+                          <Button variant="outline" className="mt-2 w-full" onClick={() => openTrace(`${r.title}｜5年追溯`, r.trace5)}>
                             追溯
                           </Button>
-                        </td>
-                      </tr>
+                        </CardContent>
+                      </Card>
                     )
                   })}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              ) : (
+                <div className="-mx-4 overflow-x-auto px-4">
+                  <table className="w-full min-w-[980px] border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs text-muted-foreground">
+                        <th className="py-2 pr-3">方案</th>
+                        <th className="py-2 pr-3">5年总成本</th>
+                        <th className="py-2 pr-3">Δ vs 宝来</th>
+                        <th className="py-2 pr-3">月供</th>
+                        <th className="py-2 pr-3"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r) => {
+                        const isBest = r.key === bestKey
+                        return (
+                          <tr key={r.key} className="border-b">
+                            <td className="py-3 pr-3 align-top">
+                              <div className="font-medium">{r.title}</div>
+                              <div className="text-xs text-muted-foreground">{r.subtitle}</div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <Badge variant="outline">{r.energy}</Badge>
+                                {isBest ? <Badge variant="success">当前最优</Badge> : null}
+                                {r.overMonthlyLimit ? <Badge variant="danger">月供超红线</Badge> : <Badge variant="secondary">月供OK</Badge>}
+                              </div>
+                            </td>
+                            <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.total5).toLocaleString('zh-CN')}</td>
+                            <td className="py-3 pr-3 align-top tabular-nums">
+                              <span className={r.delta5 <= 0 ? 'text-emerald-700' : 'text-red-700'}>
+                                {r.delta5 <= 0 ? '-' : '+'}
+                                {Math.abs(Math.round(r.delta5)).toLocaleString('zh-CN')}
+                              </span>
+                            </td>
+                            <td className="py-3 pr-3 align-top tabular-nums">{Math.round(r.monthly).toLocaleString('zh-CN')}</td>
+                            <td className="py-3 align-top">
+                              <Button variant="outline" className="w-full" onClick={() => openTrace(`${r.title}｜5年追溯`, r.trace5)}>
+                                追溯
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
@@ -181,9 +248,9 @@ export function ResultsSection() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{traceTitle}</DialogTitle>
-            <DialogDescription>展开节点可看到中间量与输入来源路径（sources 后续会在 UI 里进一步可视化）。</DialogDescription>
+            <DialogDescription>点击追溯节点下方的路径标签，可跳转并高亮对应输入框。</DialogDescription>
           </DialogHeader>
-          <div className="max-h-[70dvh] overflow-y-auto pr-1">{traceNode ? <TraceTree node={traceNode} /> : null}</div>
+          <div className="max-h-[70dvh] overflow-y-auto pr-1">{traceNode ? <TraceTree node={traceNode} onNavigate={handleNavigate} /> : null}</div>
         </DialogContent>
       </Dialog>
     </div>

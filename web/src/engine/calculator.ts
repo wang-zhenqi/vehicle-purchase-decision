@@ -17,6 +17,7 @@ export function landingPrice(car: CarDraft) {
 
 export function traceLandingPrice(car: CarDraft): TraceNode {
   const naked = car.guidePriceCny - car.dealerDiscountCny
+  const p = (field: string) => `cars.${car.id}.${field}`
   return node({
     id: nextTraceId('landing'),
     label: '落地价（不含牌照策略增量）',
@@ -30,56 +31,56 @@ export function traceLandingPrice(car: CarDraft): TraceNode {
         label: '指导价',
         unit: 'CNY',
         value: car.guidePriceCny,
-        sources: [{ kind: 'input', path: 'car.guidePriceCny' }],
+        sources: [{ kind: 'input', path: p('guidePriceCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '厂家优惠',
         unit: 'CNY',
         value: car.dealerDiscountCny,
-        sources: [{ kind: 'input', path: 'car.dealerDiscountCny' }],
+        sources: [{ kind: 'input', path: p('dealerDiscountCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '购置税',
         unit: 'CNY',
         value: car.purchaseTaxCny,
-        sources: [{ kind: 'input', path: 'car.purchaseTaxCny' }],
+        sources: [{ kind: 'input', path: p('purchaseTaxCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '首年保险',
         unit: 'CNY',
         value: car.insuranceYear1Cny,
-        sources: [{ kind: 'input', path: 'car.insuranceYear1Cny' }],
+        sources: [{ kind: 'input', path: p('insuranceYear1Cny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '店端上牌费',
         unit: 'CNY',
         value: car.dealerPlateFeeCny,
-        sources: [{ kind: 'input', path: 'car.dealerPlateFeeCny' }],
+        sources: [{ kind: 'input', path: p('dealerPlateFeeCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '厂家置换补贴',
         unit: 'CNY',
         value: car.manufacturerSubsidyCny,
-        sources: [{ kind: 'input', path: 'car.manufacturerSubsidyCny' }],
+        sources: [{ kind: 'input', path: p('manufacturerSubsidyCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '旧车折抵',
         unit: 'CNY',
         value: car.oldCarTradeInCny,
-        sources: [{ kind: 'input', path: 'car.oldCarTradeInCny' }],
+        sources: [{ kind: 'input', path: p('oldCarTradeInCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_in'),
         label: '其他费用',
         unit: 'CNY',
         value: car.otherFeesCny,
-        sources: [{ kind: 'input', path: 'car.otherFeesCny' }],
+        sources: [{ kind: 'input', path: p('otherFeesCny') }],
       }),
       leafNumber({
         id: nextTraceId('lp_mid'),
@@ -202,12 +203,18 @@ export function plateCostTrace(args: {
           label: '新车上牌/竞价/迁移费用（按模式）',
           unit: 'CNY',
           value: newCar,
+          sources: [
+            { kind: 'global', path: 'globals.bluePlateAuctionAvgCny' },
+            { kind: 'global', path: 'globals.greenPlateFeeCny' },
+            { kind: 'global', path: 'globals.plateTransferFeeCny' },
+          ],
         }),
         leafNumber({
           id: nextTraceId('plate_in'),
           label: '宝来外地牌（保留且发生指标迁移/蓝换绿时）',
           unit: 'CNY',
           value: baolaiExtra,
+          sources: [{ kind: 'global', path: 'globals.zhongshanPlateFeeCny' }],
         }),
       ],
     }),
@@ -243,6 +250,7 @@ export function computeNewCarCost(args: {
 }): NewCarCostResult {
   resetTraceIds()
   const { car, globals, assumptions, plan, years } = args
+  const cp = (field: string) => `cars.${car.id}.${field}`
 
   const y = Math.max(0, years)
   const landing = landingPrice(car)
@@ -298,7 +306,7 @@ export function computeNewCarCost(args: {
           label: '油耗',
           unit: 'L/100km',
           value: car.fuelConsumptionLPer100km,
-          sources: [{ kind: 'input', path: 'car.fuelConsumptionLPer100km' }],
+          sources: [{ kind: 'input', path: cp('fuelConsumptionLPer100km') }],
         }),
         leafNumber({
           id: nextTraceId('energy_in'),
@@ -338,7 +346,21 @@ export function computeNewCarCost(args: {
           label: '用电里程占比',
           unit: '%',
           value: car.phevElectricKmRatioPct,
-          sources: [{ kind: 'input', path: 'car.phevElectricKmRatioPct' }],
+          sources: [{ kind: 'input', path: cp('phevElectricKmRatioPct') }],
+        }),
+        leafNumber({
+          id: nextTraceId('energy_in'),
+          label: '油耗',
+          unit: 'L/100km',
+          value: car.fuelConsumptionLPer100km,
+          sources: [{ kind: 'input', path: cp('fuelConsumptionLPer100km') }],
+        }),
+        leafNumber({
+          id: nextTraceId('energy_in'),
+          label: '电耗',
+          unit: 'kWh/100km',
+          value: car.electricityConsumptionKWhPer100km,
+          sources: [{ kind: 'input', path: cp('electricityConsumptionKWhPer100km') }],
         }),
         node({
           id: nextTraceId('energy_mid'),

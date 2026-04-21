@@ -1,6 +1,7 @@
 import type { TraceNode } from '@/engine/trace'
 import { cn } from '@/lib/utils'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Badge } from '@/components/ui/badge'
 
 function formatValue(n: TraceNode) {
   const v = n.value
@@ -9,8 +10,18 @@ function formatValue(n: TraceNode) {
   return `${v}${n.unit ? ` ${n.unit}` : ''}`
 }
 
-export function TraceTree({ node, depth = 0 }: { node: TraceNode; depth?: number }) {
+export function TraceTree({
+  node,
+  depth = 0,
+  onNavigate,
+}: {
+  node: TraceNode
+  depth?: number
+  onNavigate?: (path: string) => void
+}) {
   const hasChildren = !!node.children?.length
+
+  const sources = node.sources?.filter((s) => s.kind === 'input' || s.kind === 'global' || s.kind === 'assumption') ?? []
 
   if (!hasChildren) {
     return (
@@ -18,6 +29,21 @@ export function TraceTree({ node, depth = 0 }: { node: TraceNode; depth?: number
         <div className="min-w-0">
           <div className="text-foreground">{node.label}</div>
           {node.formula ? <div className="text-xs text-muted-foreground">{node.formula}</div> : null}
+          {sources.length ? (
+            <div className="mt-1 flex flex-wrap gap-2">
+              {sources.map((s, idx) => (
+                <button
+                  key={`${s.kind}_${idx}`}
+                  type="button"
+                  className="text-left"
+                  onClick={() => onNavigate?.(s.path)}
+                  disabled={!onNavigate}
+                >
+                  <Badge variant="outline">{s.path}</Badge>
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="shrink-0 tabular-nums text-foreground">{formatValue(node)}</div>
       </div>
@@ -33,11 +59,20 @@ export function TraceTree({ node, depth = 0 }: { node: TraceNode; depth?: number
         <div className="shrink-0 tabular-nums text-sm text-foreground">{formatValue(node)}</div>
       </div>
       {node.formula ? <div className="mt-1 text-xs text-muted-foreground">{node.formula}</div> : null}
+      {sources.length ? (
+        <div className="mt-1 flex flex-wrap gap-2">
+          {sources.map((s, idx) => (
+            <button key={`${s.kind}_${idx}`} type="button" className="text-left" onClick={() => onNavigate?.(s.path)} disabled={!onNavigate}>
+              <Badge variant="outline">{s.path}</Badge>
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <CollapsibleContent className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
         <div className="ml-3 border-l pl-3">
           {node.children!.map((c) => (
-            <TraceTree key={c.id} node={c} depth={depth + 1} />
+            <TraceTree key={c.id} node={c} depth={depth + 1} onNavigate={onNavigate} />
           ))}
         </div>
       </CollapsibleContent>

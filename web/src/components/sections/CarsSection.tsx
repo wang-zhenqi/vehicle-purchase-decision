@@ -52,12 +52,18 @@ export function CarsSection() {
                   <div className="min-w-0 flex-1 space-y-2">
                     <div>
                       <Label htmlFor={`name-${car.id}`}>车型名称</Label>
-                      <Input id={`name-${car.id}`} value={car.name} onChange={(e) => updateCar(car.id, { name: e.target.value })} />
+                      <Input
+                        id={`name-${car.id}`}
+                        data-field={`cars.${car.id}.name`}
+                        value={car.name}
+                        onChange={(e) => updateCar(car.id, { name: e.target.value })}
+                      />
                     </div>
                     <div>
                       <Label htmlFor={`energy-${car.id}`}>能源类型</Label>
                       <select
                         id={`energy-${car.id}`}
+                        data-field={`cars.${car.id}.energyType`}
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         value={car.energyType}
                         onChange={(e) => updateCar(car.id, { energyType: e.target.value as typeof car.energyType })}
@@ -80,6 +86,7 @@ export function CarsSection() {
                   <div>
                     <Label>油耗（L/100km）</Label>
                     <Input
+                      data-field={`cars.${car.id}.fuelConsumptionLPer100km`}
                       inputMode="decimal"
                       value={car.fuelConsumptionLPer100km}
                       onChange={(e) => updateCar(car.id, { fuelConsumptionLPer100km: Number(e.target.value) })}
@@ -90,6 +97,7 @@ export function CarsSection() {
                       <div>
                         <Label>电耗（kWh/100km）</Label>
                         <Input
+                          data-field={`cars.${car.id}.electricityConsumptionKWhPer100km`}
                           inputMode="decimal"
                           value={car.electricityConsumptionKWhPer100km}
                           onChange={(e) => updateCar(car.id, { electricityConsumptionKWhPer100km: Number(e.target.value) })}
@@ -98,6 +106,7 @@ export function CarsSection() {
                       <div className="sm:col-span-2">
                         <Label>用电里程占比（%）</Label>
                         <Input
+                          data-field={`cars.${car.id}.phevElectricKmRatioPct`}
                           inputMode="numeric"
                           value={car.phevElectricKmRatioPct}
                           onChange={(e) => updateCar(car.id, { phevElectricKmRatioPct: Number(e.target.value) })}
@@ -113,11 +122,17 @@ export function CarsSection() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <Label>指导价（元）</Label>
-                    <Input inputMode="numeric" value={car.guidePriceCny} onChange={(e) => updateCar(car.id, { guidePriceCny: Number(e.target.value) })} />
+                    <Input
+                      data-field={`cars.${car.id}.guidePriceCny`}
+                      inputMode="numeric"
+                      value={car.guidePriceCny}
+                      onChange={(e) => updateCar(car.id, { guidePriceCny: Number(e.target.value) })}
+                    />
                   </div>
                   <div>
                     <Label>厂家优惠（元）</Label>
                     <Input
+                      data-field={`cars.${car.id}.dealerDiscountCny`}
                       inputMode="numeric"
                       value={car.dealerDiscountCny}
                       onChange={(e) => updateCar(car.id, { dealerDiscountCny: Number(e.target.value) })}
@@ -125,11 +140,17 @@ export function CarsSection() {
                   </div>
                   <div>
                     <Label>购置税（元）</Label>
-                    <Input inputMode="numeric" value={car.purchaseTaxCny} onChange={(e) => updateCar(car.id, { purchaseTaxCny: Number(e.target.value) })} />
+                    <Input
+                      data-field={`cars.${car.id}.purchaseTaxCny`}
+                      inputMode="numeric"
+                      value={car.purchaseTaxCny}
+                      onChange={(e) => updateCar(car.id, { purchaseTaxCny: Number(e.target.value) })}
+                    />
                   </div>
                   <div>
                     <Label>首年保险（元）</Label>
                     <Input
+                      data-field={`cars.${car.id}.insuranceYear1Cny`}
                       inputMode="numeric"
                       value={car.insuranceYear1Cny}
                       onChange={(e) => updateCar(car.id, { insuranceYear1Cny: Number(e.target.value) })}
@@ -138,6 +159,7 @@ export function CarsSection() {
                   <div>
                     <Label>店端上牌费（元）</Label>
                     <Input
+                      data-field={`cars.${car.id}.dealerPlateFeeCny`}
                       inputMode="numeric"
                       value={car.dealerPlateFeeCny}
                       onChange={(e) => updateCar(car.id, { dealerPlateFeeCny: Number(e.target.value) })}
@@ -146,6 +168,7 @@ export function CarsSection() {
                   <div>
                     <Label>厂家置换补贴（元）</Label>
                     <Input
+                      data-field={`cars.${car.id}.manufacturerSubsidyCny`}
                       inputMode="numeric"
                       value={car.manufacturerSubsidyCny}
                       onChange={(e) => updateCar(car.id, { manufacturerSubsidyCny: Number(e.target.value) })}
@@ -154,6 +177,7 @@ export function CarsSection() {
                   <div>
                     <Label>旧车折抵（元）</Label>
                     <Input
+                      data-field={`cars.${car.id}.oldCarTradeInCny`}
                       inputMode="numeric"
                       value={car.oldCarTradeInCny}
                       onChange={(e) => updateCar(car.id, { oldCarTradeInCny: Number(e.target.value) })}
@@ -161,11 +185,17 @@ export function CarsSection() {
                   </div>
                   <div>
                     <Label>其他费用（元）</Label>
-                    <Input inputMode="numeric" value={car.otherFeesCny} onChange={(e) => updateCar(car.id, { otherFeesCny: Number(e.target.value) })} />
+                    <Input
+                      data-field={`cars.${car.id}.otherFeesCny`}
+                      inputMode="numeric"
+                      value={car.otherFeesCny}
+                      onChange={(e) => updateCar(car.id, { otherFeesCny: Number(e.target.value) })}
+                    />
                   </div>
                   <div>
                     <Label>5年保值率（%）</Label>
                     <Input
+                      data-field={`cars.${car.id}.residualRate5yPct`}
                       inputMode="decimal"
                       value={car.residualRate5yPct}
                       onChange={(e) => updateCar(car.id, { residualRate5yPct: Number(e.target.value) })}
@@ -179,6 +209,7 @@ export function CarsSection() {
                   <div>
                     <Label>覆盖：年均保险（元/年，可选）</Label>
                     <Input
+                      data-field={`cars.${car.id}.annualInsuranceCny`}
                       inputMode="numeric"
                       placeholder="留空则按首年×系数估算"
                       value={car.annualInsuranceCny ?? ''}
@@ -191,6 +222,7 @@ export function CarsSection() {
                   <div>
                     <Label>覆盖：年均维保（元/年，可选）</Label>
                     <Input
+                      data-field={`cars.${car.id}.annualMaintenanceCny`}
                       inputMode="numeric"
                       placeholder="留空则按落地价×比例估算"
                       value={car.annualMaintenanceCny ?? ''}
